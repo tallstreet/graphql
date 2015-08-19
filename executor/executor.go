@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/tmc/graphql"
-	"github.com/tmc/graphql/schema"
+	"github.com/tallstreet/graphql"
+	"github.com/tallstreet/graphql/schema"
 	"golang.org/x/net/context"
 )
 
@@ -78,6 +78,10 @@ func (e *Executor) Resolve(ctx context.Context, partial interface{}, field *grap
 	wg := sync.WaitGroup{}
 
 	for _, selection := range field.SelectionSet {
+		
+		if selection.Field == nil {
+			continue
+		}
 		fieldName := selection.Field.Name
 		fieldHandler, ok := typeInfo.Fields[fieldName]
 		if !ok {

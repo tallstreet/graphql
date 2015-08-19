@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/tmc/graphql"
-	"github.com/tmc/graphql/executor/resolver"
+	"github.com/tallstreet/graphql"
+	"github.com/tallstreet/graphql/executor/resolver"
 	"golang.org/x/net/context"
 )
 
@@ -30,7 +30,7 @@ func New() *Schema {
 func (s *Schema) Register(t GraphQLType) {
 	typeInfo := t.GraphQLTypeInfo()
 	s.registeredTypes[t.GraphQLTypeInfo().Name] = typeInfo
-	// TODO(tmc): collision handling
+	// TODO(tallstreet): collision handling
 	for name, fieldSpec := range typeInfo.Fields {
 		if fieldSpec.IsRoot {
 			s.rootFields[name] = fieldSpec

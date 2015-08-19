@@ -1,7 +1,7 @@
 package resolver
 
 import (
-	"github.com/tmc/graphql"
+	"github.com/tallstreet/graphql"
 	"golang.org/x/net/context"
 )
 

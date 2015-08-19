@@ -1,8 +1,8 @@
 package schema
 
 import (
-	"github.com/tmc/graphql"
-	"github.com/tmc/graphql/executor/resolver"
+	"github.com/tallstreet/graphql"
+	"github.com/tallstreet/graphql/executor/resolver"
 	"golang.org/x/net/context"
 )
 

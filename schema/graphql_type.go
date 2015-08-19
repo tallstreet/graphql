@@ -3,8 +3,8 @@ package schema
 import (
 	"sort"
 
-	"github.com/tmc/graphql"
-	"github.com/tmc/graphql/executor/resolver"
+	"github.com/tallstreet/graphql"
+	"github.com/tallstreet/graphql/executor/resolver"
 	"golang.org/x/net/context"
 )
 
@@ -69,7 +69,7 @@ type GraphQLFieldSpec struct {
 	Func        GraphQLFieldFunc
 	Arguments   []graphql.Argument // Describes any arguments the field accepts
 	IsRoot      bool               // If true, this field should be exposed at the root of the GraphQL schema
-	// TODO(tmc) add isDeprecated/deprecationReason
+	// TODO(tallstreet) add isDeprecated/deprecationReason
 }
 
 func (g *GraphQLFieldSpec) GraphQLTypeInfo() GraphQLTypeInfo {

@@ -6,15 +6,21 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/tmc/graphql/executor"
-	"github.com/tmc/graphql/executor/tracer"
-	"github.com/tmc/graphql/parser"
+	"github.com/tallstreet/graphql/executor"
+	"github.com/tallstreet/graphql/executor/tracer"
+	"github.com/tallstreet/graphql/parser"
 	"golang.org/x/net/context"
 )
 
 // Error represents an error the occured while parsing a graphql query or while generating a response.
 type Error struct {
 	Message string `json:"message"`
+}
+
+// Result represents a relay query.
+type Request struct {
+	Query      string      `json:"query,omitempty"`
+	Variables  interface{} `json:"variables,omitempty"`
 }
 
 // Result represents a graphql query result.
@@ -67,9 +73,21 @@ func (h *ExecutorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		return
 	}
-
-	//TODO(tmc): reject non-GET/OPTIONS requests
+	
+	decoder := json.NewDecoder(r.Body)
+  var qreq Request   
+  err := decoder.Decode(&qreq)
+	if err != nil {
+		log.Println("error parsing:", err)
+		writeErr(w, err)
+		return
+	}
+	q := qreq.Query
+	
+	/*
+	//TODO(tallstreet): reject non-GET/OPTIONS requests
 	q := r.URL.Query().Get("q")
+	*/
 	log.Println("query:", q)
 	operation, err := parser.ParseOperation([]byte(q))
 	if err != nil {
@@ -77,6 +95,9 @@ func (h *ExecutorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, err)
 		return
 	}
+
+	asjson, _ := json.MarshalIndent(operation, "", " ")
+	log.Println(string(asjson))
 	// if err := h.validator.Validate(operation); err != nil { writeErr(w, err); return }
 	ctx := context.Background()
 	if r.Header.Get("X-Trace-ID") != "" {

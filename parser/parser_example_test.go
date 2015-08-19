@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/tmc/graphql/parser"
+	"github.com/tallstreet/graphql/parser"
 )
 
 const exampleQuery = `{ foo { field } }`

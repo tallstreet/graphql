@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/tmc/graphql"
-	"github.com/tmc/graphql/internal/parser"
+	"github.com/tallstreet/graphql"
+	"github.com/tallstreet/graphql/internal/parser"
 )
 
 var (

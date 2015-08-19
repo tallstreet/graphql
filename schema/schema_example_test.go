@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/tmc/graphql"
-	"github.com/tmc/graphql/executor"
-	"github.com/tmc/graphql/executor/resolver"
-	"github.com/tmc/graphql/parser"
-	"github.com/tmc/graphql/schema"
+	"github.com/tallstreet/graphql"
+	"github.com/tallstreet/graphql/executor"
+	"github.com/tallstreet/graphql/executor/resolver"
+	"github.com/tallstreet/graphql/parser"
+	"github.com/tallstreet/graphql/schema"
 	"golang.org/x/net/context"
 )
 

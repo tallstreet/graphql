@@ -12,7 +12,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/tmc/graphql"
+	"github.com/tallstreet/graphql"
 )
 
 // helpers

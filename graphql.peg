@@ -1,7 +1,7 @@
 {
 package parser
 
-import "github.com/tmc/graphql"
+import "github.com/tallstreet/graphql"
 
 // helpers
 func ifs(v interface{}) []interface{} {
@@ -280,7 +280,7 @@ Variable ← vn:VariableName '.' pn:PropertyName {
 VariableName ← '$' [0-9a-z_]i+ {
 	return string(c.text), nil
 }
-// TODO(tmc): Variable above should be something like Variable ← VariableName / VariablePropertySelection
+// TODO(tallstreet): Variable above should be something like Variable ← VariableName / VariablePropertySelection
 // peg parsers can't express left recursion so for now only one level of variable propery access is allowed
 //
 // VariablePropertySelection ← Variable '.' PropertyName

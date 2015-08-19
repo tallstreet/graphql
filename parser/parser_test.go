@@ -3,7 +3,7 @@ package parser_test
 import (
 	"testing"
 
-	"github.com/tmc/graphql/parser"
+	"github.com/tallstreet/graphql/parser"
 )
 
 func TestMalformedQuery(t *testing.T) {

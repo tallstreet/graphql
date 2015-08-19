@@ -1,7 +1,7 @@
 // Program basic_graphql_server shows a simple HTTP server that exposes a bare schema.
 //
 // Example:
-//  $ go get github.com/tmc/graphql/example/basic_graphql_server
+//  $ go get github.com/tallstreet/graphql/example/basic_graphql_server
 //  $ basic_graphql_server &
 //  $ curl -g 'http://localhost:8080/?q={__schema{root_fields{name,description}}}'
 //  {"data":[{"root_fields":[{"description": "Schema entry root field","name":"__schema"}]}}]
@@ -15,11 +15,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/tmc/graphql"
-	"github.com/tmc/graphql/executor"
-	"github.com/tmc/graphql/executor/resolver"
-	"github.com/tmc/graphql/handler"
-	"github.com/tmc/graphql/schema"
+	"github.com/tallstreet/graphql"
+	"github.com/tallstreet/graphql/executor"
+	"github.com/tallstreet/graphql/executor/resolver"
+	"github.com/tallstreet/graphql/handler"
+	"github.com/tallstreet/graphql/schema"
 	"golang.org/x/net/context"
 )
 
