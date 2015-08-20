@@ -1,34 +1,34 @@
-package parser_test
+// Copyright 2015 Sevki <s@sevki.org>. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package parser // import "github.com/tallstreet/graphql/parser"
 
 import (
+	"log"
+	"os"
 	"testing"
 
-	"github.com/tallstreet/graphql/parser"
+	"github.com/tallstreet/graphql/ast"
+	"sevki.org/lib/prettyprint"
 )
 
-func TestMalformedQuery(t *testing.T) {
-	op, err := parser.ParseOperation(nil)
-	if !parser.IsMalformedOperation(err) {
-		t.Error("Expected malformed operation")
-	}
-	if op != nil {
-		t.Error("Expected nil result")
-	}
-	if es := err.Error(); es != "parser: malformed graphql operation: 1:1 (0): no match found" {
-		t.Errorf("got unexpected error: '%v'", es)
-	}
-}
+func TestKitchenSink(t *testing.T) {
+	t.Parallel()
+	var doc ast.Document
+	ks, _ := os.Open("../tests/relay-todo.graphql")
+	if err := New("kitchenSink", ks).Decode(&doc); err != nil {
+		t.Error(err.Error())
 
-func TestMultipleOperations(t *testing.T) {
-	multi := `
-	{foo}
-	{bar}
-	`
-	op, err := parser.ParseOperation([]byte(multi))
-	if err != parser.ErrMultipleOperations {
-		t.Error("Expected multiple operations error")
+		if err != nil {
+			t.Error(err)
+		}
+
+	} else {
+		//		fs, _ := os.Open("../tests/complex-as-possible.graphql")
+		//		e, _ := ioutil.ReadAll(fs)
+		//		log.Printf(string(e))
+		log.Printf(prettyprint.AsJSON(doc))
 	}
-	if op != nil {
-		t.Error("Expected nil result")
-	}
+
 }
