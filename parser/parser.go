@@ -17,7 +17,22 @@ int process_visit_document_cgo(struct GraphQLAstDocument *node, void *parser);
 void process_end_visit_document_cgo(struct GraphQLAstDocument *node, void *parser);
 int process_visit_operation_definition_cgo(struct GraphQLAstOperationDefinition *node, void *parser);
 void process_end_visit_operation_definition_cgo(struct GraphQLAstOperationDefinition *node, void *parser);
-
+int process_visit_variable_definition_cgo(struct GraphQLAstVariableDefinition *node, void *parser);
+void process_end_visit_variable_definition_cgo(struct GraphQLAstVariableDefinition *node, void *parser);
+int process_visit_selection_set_cgo(struct GraphQLAstSelectionSet *node, void *parser);
+void process_end_visit_selection_set_cgo(struct GraphQLAstSelectionSet *node, void *parser);
+int process_visit_field_cgo(struct GraphQLAstField *node, void *parser);
+void process_end_visit_field_cgo(struct GraphQLAstField *node, void *parser);
+int process_visit_argument_cgo(struct GraphQLAstArgument *node, void *parser);
+void process_end_visit_argument_cgo(struct GraphQLAstArgument *node, void *parser);
+int process_visit_fragment_spread_cgo(struct GraphQLAstFragmentSpread *node, void *parser);
+void process_end_visit_fragment_spread_cgo(struct GraphQLAstFragmentSpread *node, void *parser);
+int process_visit_inline_fragment_cgo(struct GraphQLAstInlineFragment *node, void *parser);
+void process_end_visit_inline_fragment_cgo(struct GraphQLAstInlineFragment *node, void *parser);
+int process_visit_fragment_definition_cgo(struct GraphQLAstFragmentDefinition *node, void *parser);
+void process_end_visit_fragment_definition_cgo(struct GraphQLAstFragmentDefinition *node, void *parser);
+int process_visit_variable_cgo(struct GraphQLAstVariable *node, void *parser);
+void process_end_visit_variable_cgo(struct GraphQLAstVariable *node, void *parser);
 */
 import "C"
 
@@ -81,6 +96,132 @@ func processEndVisitOperationDefinition(node *C.struct_GraphQLAstOperationDefini
 }
 
 
+//export processVisitVariableDefinition
+func processVisitVariableDefinition(node *C.struct_GraphQLAstVariableDefinition, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	//doc := p.nodes.Head().(*graphql.Document)
+	variable := &graphql.VariableDefinition {
+	}
+	/*
+	doc.AddDefinition(operation)
+	*/
+	p.visitNode(variable)
+	return 0
+}
+
+//export processEndVisitVariableDefinition
+func processEndVisitVariableDefinition(node *C.struct_GraphQLAstVariableDefinition, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	//variable := p.nodes.Head().(*graphql.Variable)
+	//p.endVisitNode()
+	variableDef := p.nodes.Head().(*graphql.VariableDefinition)
+	typeT := (*C.struct_GraphQLAstNamedType)(C.GraphQLAstVariableDefinition_get_type(node))
+	typeName := C.GraphQLAstNamedType_get_name(typeT)
+	variableDef.Type.Name = C.GoString(C.GraphQLAstName_get_value(typeName))
+	//variableDef.Variable = variable
+	p.endVisitNode()
+}
+
+
+//export processVisitSelectionSet
+func processVisitSelectionSet(node *C.struct_GraphQLAstSelectionSet, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	selectionSet := &graphql.SelectionSet{}
+	p.visitNode(selectionSet)
+	return 0
+}
+
+//export processEndVisitSelectionSet
+func processEndVisitSelectionSet(node *C.struct_GraphQLAstSelectionSet, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+//export processVisitField
+func processVisitField(node *C.struct_GraphQLAstField, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	field := &graphql.Field{}
+	p.visitNode(field)
+	return 0
+}
+
+//export processEndVisitField
+func processEndVisitField(node *C.struct_GraphQLAstField, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+//export processVisitArgument
+func processVisitArgument(node *C.struct_GraphQLAstArgument, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	argument := &graphql.Argument{}
+	p.visitNode(argument)
+	return 0
+}
+
+//export processEndVisitArgument
+func processEndVisitArgument(node *C.struct_GraphQLAstArgument, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+//export processVisitFragmentSpread
+func processVisitFragmentSpread(node *C.struct_GraphQLAstFragmentSpread, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	fragment := &graphql.FragmentSpread{}
+	p.visitNode(fragment)
+	return 0
+}
+
+//export processEndVisitFragmentSpread
+func processEndVisitFragmentSpread(node *C.struct_GraphQLAstFragmentSpread, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+//export processVisitInlineFragment
+func processVisitInlineFragment(node *C.struct_GraphQLAstInlineFragment, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	fragment := &graphql.InlineFragment{}
+	p.visitNode(fragment)
+	return 0
+}
+
+//export processEndVisitInlineFragment
+func processEndVisitInlineFragment(node *C.struct_GraphQLAstInlineFragment, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+//export processVisitFragmentDefinition
+func processVisitFragmentDefinition(node *C.struct_GraphQLAstFragmentDefinition, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	fragment := &graphql.InlineFragment{}
+	p.visitNode(fragment)
+	return 0
+}
+
+//export processEndVisitFragmentDefinition
+func processEndVisitFragmentDefinition(node *C.struct_GraphQLAstFragmentDefinition, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+//export processVisitVariable
+func processVisitVariable(node *C.struct_GraphQLAstVariable, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	variable := &graphql.Variable{}
+	p.visitNode(variable)
+	return 0
+}
+
+//export processEndVisitVariable
+func processEndVisitVariable(node *C.struct_GraphQLAstVariable, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+
 func (p *Parser) visitNode(node interface{}) {
 	p.nodes.Push(node)
 }
@@ -129,7 +270,6 @@ func (p *Parser) run() {
 		end_visit_document: (C.end_visit_document_func)(C.process_end_visit_document_cgo),
 		visit_operation_definition: (C.visit_operation_definition_func)(C.process_visit_operation_definition_cgo),
 		end_visit_operation_definition: (C.end_visit_operation_definition_func)(C.process_end_visit_operation_definition_cgo),
-		/*
 		visit_variable_definition: (C.visit_variable_definition_func)(C.process_visit_variable_definition_cgo),
 		end_visit_variable_definition: (C.end_visit_variable_definition_func)(C.process_end_visit_variable_definition_cgo),
 		visit_selection_set: (C.visit_selection_set_func)(C.process_visit_selection_set_cgo),
@@ -146,7 +286,7 @@ func (p *Parser) run() {
 		end_visit_fragment_definition: (C.end_visit_fragment_definition_func)(C.process_end_visit_fragment_definition_cgo),
 		visit_variable: (C.visit_variable_func)(C.process_visit_variable_cgo),
 		end_visit_variable: (C.end_visit_variable_func)(C.process_end_visit_variable_cgo),
-		visit_int_value: (C.visit_int_value_func)(C.process_visit_int_value_cgo),
+		/*visit_int_value: (C.visit_int_value_func)(C.process_visit_int_value_cgo),
 		end_visit_int_value: (C.end_visit_int_value_func)(C.process_end_visit_int_value_cgo),
 		visit_float_value: (C.visit_float_value_func)(C.process_visit_float_value_cgo),
 		end_visit_float_value: (C.end_visit_float_value_func)(C.process_end_visit_float_value_cgo),

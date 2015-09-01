@@ -91,7 +91,7 @@ func (a Arguments) Get(name string) (interface{}, bool) {
 }
 
 // SelectionSet is a collection of Selection
-type SelectionSet []Selection
+type SelectionSet []*Selection
 
 // Fragments
 
@@ -165,7 +165,7 @@ type EnumValue struct {
 
 // VariableDefinition defines a variable for an Operation.
 type VariableDefinition struct {
-	Variable     Variable
+	Variable     *Variable
 	Type         Type
 	DefaultValue *Value `json:",omitempty"`
 }
