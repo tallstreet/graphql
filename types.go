@@ -15,7 +15,8 @@ const (
 
 // Document is the top-level representation of a string in GraphQL.
 type Document struct {
-	Operations          []Operation
+	Operations          []*Operation
+	DefinitionSize      int
 	FragmentDefinitions []FragmentDefinition `json:",omitempty"`
 	EnumDefinitions     []EnumDefinition     `json:",omitempty"`
 	TypeDefinitions     []TypeDefinition     `json:",omitempty"`
