@@ -99,6 +99,122 @@ void process_end_visit_variable_cgo(struct GraphQLAstVariable *node, void *parse
   processEndVisitVariable(node, parser);
 }
 
+struct GraphQLAstIntValue;
+int process_visit_int_value_cgo(struct GraphQLAstIntValue *node, void *parser){
+  return processVisitIntValue(node, parser);
+}
+
+void process_end_visit_int_value_cgo(struct GraphQLAstIntValue *node, void *parser){
+  processEndVisitIntValue(node, parser);
+}
+
+struct GraphQLAstFloatValue;
+int process_visit_float_value_cgo(struct GraphQLAstFloatValue *node, void *parser){
+  return processVisitFloatValue(node, parser);
+}
+
+void process_end_visit_float_value_cgo(struct GraphQLAstFloatValue *node, void *parser){
+  processEndVisitFloatValue(node, parser);
+}
+
+struct GraphQLAstStringValue;
+int process_visit_string_value_cgo(struct GraphQLAstStringValue *node, void *parser){
+  return processVisitStringValue(node, parser);
+}
+
+void process_end_visit_string_value_cgo(struct GraphQLAstStringValue *node, void *parser){
+  processEndVisitStringValue(node, parser);
+}
+
+struct GraphQLAstBooleanValue;
+int process_visit_boolean_value_cgo(struct GraphQLAstBooleanValue *node, void *parser){
+  return processVisitBooleanValue(node, parser);
+}
+
+void process_end_visit_boolean_value_cgo(struct GraphQLAstBooleanValue *node, void *parser){
+  processEndVisitBooleanValue(node, parser);
+}
+
+struct GraphQLAstEnumValue;
+int process_visit_enum_value_cgo(struct GraphQLAstEnumValue *node, void *parser){
+  return processVisitEnumValue(node, parser);
+}
+
+void process_end_visit_enum_value_cgo(struct GraphQLAstEnumValue *node, void *parser){
+  processEndVisitEnumValue(node, parser);
+}
+
+struct GraphQLAstArrayValue;
+int process_visit_array_value_cgo(struct GraphQLAstArrayValue *node, void *parser){
+  return processVisitArrayValue(node, parser);
+}
+
+void process_end_visit_array_value_cgo(struct GraphQLAstArrayValue *node, void *parser){
+  processEndVisitArrayValue(node, parser);
+}
+
+struct GraphQLAstObjectValue;
+int process_visit_object_value_cgo(struct GraphQLAstObjectValue *node, void *parser){
+  return processVisitObjectValue(node, parser);
+}
+
+void process_end_visit_object_value_cgo(struct GraphQLAstObjectValue *node, void *parser){
+  processEndVisitObjectValue(node, parser);
+}
+
+struct GraphQLAstObjectField;
+int process_visit_object_field_cgo(struct GraphQLAstObjectField *node, void *parser){
+  return processVisitObjectField(node, parser);
+}
+
+void process_end_visit_object_field_cgo(struct GraphQLAstObjectField *node, void *parser){
+  processEndVisitObjectField(node, parser);
+}
+
+struct GraphQLAstDirective;
+int process_visit_directive_cgo(struct GraphQLAstDirective *node, void *parser){
+  return processVisitDirective(node, parser);
+}
+
+void process_end_visit_directive_cgo(struct GraphQLAstDirective *node, void *parser){
+  processEndVisitDirective(node, parser);
+}
+
+struct GraphQLAstNamedType;
+int process_visit_named_type_cgo(struct GraphQLAstNamedType *node, void *parser){
+  return processVisitNamedType(node, parser);
+}
+
+void process_end_visit_named_type_cgo(struct GraphQLAstNamedType *node, void *parser){
+  processEndVisitNamedType(node, parser);
+}
+
+struct GraphQLAstListType;
+int process_visit_list_type_cgo(struct GraphQLAstListType *node, void *parser){
+  return processVisitListType(node, parser);
+}
+
+void process_end_visit_list_type_cgo(struct GraphQLAstListType *node, void *parser){
+  processEndVisitListType(node, parser);
+}
+
+struct GraphQLAstNonNullType;
+int process_visit_non_null_type_cgo(struct GraphQLAstNonNullType *node, void *parser){
+  return processVisitNonNullType(node, parser);
+}
+
+void process_end_visit_non_null_type_cgo(struct GraphQLAstNonNullType *node, void *parser){
+  processEndVisitNonNullType(node, parser);
+}
+
+struct GraphQLAstName;
+int process_visit_name_cgo(struct GraphQLAstName *node, void *parser){
+  return processVisitName(node, parser);
+}
+
+void process_end_visit_name_cgo(struct GraphQLAstName *node, void *parser){
+  processEndVisitName(node, parser);
+}
 
 */
 import "C"

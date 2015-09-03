@@ -33,6 +33,32 @@ int process_visit_fragment_definition_cgo(struct GraphQLAstFragmentDefinition *n
 void process_end_visit_fragment_definition_cgo(struct GraphQLAstFragmentDefinition *node, void *parser);
 int process_visit_variable_cgo(struct GraphQLAstVariable *node, void *parser);
 void process_end_visit_variable_cgo(struct GraphQLAstVariable *node, void *parser);
+int process_visit_int_value_cgo(struct GraphQLAstIntValue *node, void *parser);
+void process_end_visit_int_value_cgo(struct GraphQLAstIntValue *node, void *parser);
+int process_visit_float_value_cgo(struct GraphQLAstFloatValue *node, void *parser);
+void process_end_visit_float_value_cgo(struct GraphQLAstFloatValue *node, void *parser);
+int process_visit_string_value_cgo(struct GraphQLAstStringValue *node, void *parser);
+void process_end_visit_string_value_cgo(struct GraphQLAstStringValue *node, void *parser);
+int process_visit_boolean_value_cgo(struct GraphQLAstBooleanValue *node, void *parser);
+void process_end_visit_boolean_value_cgo(struct GraphQLAstBooleanValue *node, void *parser);
+int process_visit_enum_value_cgo(struct GraphQLAstEnumValue *node, void *parser);
+void process_end_visit_enum_value_cgo(struct GraphQLAstEnumValue *node, void *parser);
+int process_visit_array_value_cgo(struct GraphQLAstArrayValue *node, void *parser);
+void process_end_visit_array_value_cgo(struct GraphQLAstArrayValue *node, void *parser);
+int process_visit_object_value_cgo(struct GraphQLAstObjectValue *node, void *parser);
+void process_end_visit_object_value_cgo(struct GraphQLAstObjectValue *node, void *parser);
+int process_visit_object_field_cgo(struct GraphQLAstObjectField *node, void *parser);
+void process_end_visit_object_field_cgo(struct GraphQLAstObjectField *node, void *parser);
+int process_visit_directive_cgo(struct GraphQLAstDirective *node, void *parser);
+void process_end_visit_directive_cgo(struct GraphQLAstDirective *node, void *parser);
+int process_visit_named_type_cgo(struct GraphQLAstNamedType *node, void *parser);
+void process_end_visit_named_type_cgo(struct GraphQLAstNamedType *node, void *parser);
+int process_visit_list_type_cgo(struct GraphQLAstListType *node, void *parser);
+void process_end_visit_list_type_cgo(struct GraphQLAstListType *node, void *parser);
+int process_visit_non_null_type_cgo(struct GraphQLAstNonNullType *node, void *parser);
+void process_end_visit_non_null_type_cgo(struct GraphQLAstNonNullType *node, void *parser);
+int process_visit_name_cgo(struct GraphQLAstName *node, void *parser);
+void process_end_visit_name_cgo(struct GraphQLAstName *node, void *parser);
 */
 import "C"
 
@@ -221,6 +247,188 @@ func processEndVisitVariable(node *C.struct_GraphQLAstVariable, parser unsafe.Po
 	p.endVisitNode()
 }
 
+//export processVisitIntValue
+func processVisitIntValue(node *C.struct_GraphQLAstIntValue, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	value := C.GraphQLAstIntValue_get_value(node)
+	p.visitNode(value)
+	return 1
+}
+
+//export processEndVisitIntValue
+func processEndVisitIntValue(node *C.struct_GraphQLAstIntValue, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+//export processVisitFloatValue
+func processVisitFloatValue(node *C.struct_GraphQLAstFloatValue, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	value := C.GraphQLAstFloatValue_get_value(node)
+	p.visitNode(value)
+	return 1
+}
+
+//export processEndVisitFloatValue
+func processEndVisitFloatValue(node *C.struct_GraphQLAstFloatValue, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+//export processVisitStringValue
+func processVisitStringValue(node *C.struct_GraphQLAstStringValue, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	value := C.GraphQLAstStringValue_get_value(node)
+	p.visitNode(value)
+	return 1
+}
+
+//export processEndVisitStringValue
+func processEndVisitStringValue(node *C.struct_GraphQLAstStringValue, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+//export processVisitBooleanValue
+func processVisitBooleanValue(node *C.struct_GraphQLAstBooleanValue, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	value := C.GraphQLAstBooleanValue_get_value(node)
+	p.visitNode(value)
+	return 1
+}
+
+//export processEndVisitBooleanValue
+func processEndVisitBooleanValue(node *C.struct_GraphQLAstBooleanValue, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+//export processVisitEnumValue
+func processVisitEnumValue(node *C.struct_GraphQLAstEnumValue, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	value := C.GraphQLAstEnumValue_get_value(node)
+	p.visitNode(value)
+	return 1
+}
+
+//export processEndVisitEnumValue
+func processEndVisitEnumValue(node *C.struct_GraphQLAstEnumValue, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+
+//export processVisitArrayValue
+func processVisitArrayValue(node *C.struct_GraphQLAstArrayValue, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	value := 200 //C.GraphQLAstArrayValue_get_value(node)
+	p.visitNode(value)
+	return 1
+}
+
+//export processEndVisitArrayValue
+func processEndVisitArrayValue(node *C.struct_GraphQLAstArrayValue, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+//export processVisitObjectValue
+func processVisitObjectValue(node *C.struct_GraphQLAstObjectValue, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	value := 200//C.GraphQLAstObjectValue_get_value(node)
+	p.visitNode(value)
+	return 1
+}
+
+//export processEndVisitObjectValue
+func processEndVisitObjectValue(node *C.struct_GraphQLAstObjectValue, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+//export processVisitObjectField
+func processVisitObjectField(node *C.struct_GraphQLAstObjectField, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	value := C.GraphQLAstObjectField_get_value(node)
+	p.visitNode(value)
+	return 1
+}
+
+//export processEndVisitObjectField
+func processEndVisitObjectField(node *C.struct_GraphQLAstObjectField, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+//export processVisitDirective
+func processVisitDirective(node *C.struct_GraphQLAstDirective, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	value := 200//C.GraphQLAstDirective_get_value(node)
+	p.visitNode(value)
+	return 1
+}
+
+//export processEndVisitDirective
+func processEndVisitDirective(node *C.struct_GraphQLAstDirective, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+//export processVisitNamedType
+func processVisitNamedType(node *C.struct_GraphQLAstNamedType, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	value := 200//C.GraphQLAstNamedType_get_value(node)
+	p.visitNode(value)
+	return 1
+}
+
+//export processEndVisitNamedType
+func processEndVisitNamedType(node *C.struct_GraphQLAstNamedType, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+//export processVisitListType
+func processVisitListType(node *C.struct_GraphQLAstListType, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	value := 200//C.GraphQLAstListType_get_value(node)
+	p.visitNode(value)
+	return 1
+}
+
+//export processEndVisitListType
+func processEndVisitListType(node *C.struct_GraphQLAstListType, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+//export processVisitNonNullType
+func processVisitNonNullType(node *C.struct_GraphQLAstNonNullType, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	value := 200 //C.GraphQLAstNonNullType_get_value(node)
+	p.visitNode(value)
+	return 1
+}
+
+//export processEndVisitNonNullType
+func processEndVisitNonNullType(node *C.struct_GraphQLAstNonNullType, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
+
+//export processVisitName
+func processVisitName(node *C.struct_GraphQLAstName, parser unsafe.Pointer) int {
+	p := (*Parser)(parser)
+	value := C.GraphQLAstName_get_value(node)
+	p.visitNode(value)
+	return 1
+}
+
+//export processEndVisitName
+func processEndVisitName(node *C.struct_GraphQLAstName, parser unsafe.Pointer) {
+	p := (*Parser)(parser)
+	p.endVisitNode()
+}
 
 func (p *Parser) visitNode(node interface{}) {
 	p.nodes.Push(node)
@@ -286,7 +494,7 @@ func (p *Parser) run() {
 		end_visit_fragment_definition: (C.end_visit_fragment_definition_func)(C.process_end_visit_fragment_definition_cgo),
 		visit_variable: (C.visit_variable_func)(C.process_visit_variable_cgo),
 		end_visit_variable: (C.end_visit_variable_func)(C.process_end_visit_variable_cgo),
-		/*visit_int_value: (C.visit_int_value_func)(C.process_visit_int_value_cgo),
+		visit_int_value: (C.visit_int_value_func)(C.process_visit_int_value_cgo),
 		end_visit_int_value: (C.end_visit_int_value_func)(C.process_end_visit_int_value_cgo),
 		visit_float_value: (C.visit_float_value_func)(C.process_visit_float_value_cgo),
 		end_visit_float_value: (C.end_visit_float_value_func)(C.process_end_visit_float_value_cgo),
@@ -312,7 +520,6 @@ func (p *Parser) run() {
 		end_visit_non_null_type: (C.end_visit_non_null_type_func)(C.process_end_visit_non_null_type_cgo),
 		visit_name: (C.visit_name_func)(C.process_visit_name_cgo),
 		end_visit_name: (C.end_visit_name_func)(C.process_end_visit_name_cgo),
-		*/
 	}
 	C.graphql_node_visit(ast, &visitor_callbacks, unsafe.Pointer(p))
 
