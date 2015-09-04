@@ -132,20 +132,29 @@ func processVisitVariableDefinition(node *C.struct_GraphQLAstVariableDefinition,
 	doc.AddDefinition(operation)
 	*/
 	p.visitNode(variable)
-	return 0
+	return 1
 }
 
 //export processEndVisitVariableDefinition
 func processEndVisitVariableDefinition(node *C.struct_GraphQLAstVariableDefinition, parser unsafe.Pointer) {
+	var variable *graphql.VariableDefinition
+	var ok bool
 	p := (*Parser)(parser)
-	//variable := p.nodes.Head().(*graphql.Variable)
-	//p.endVisitNode()
-	variableDef := p.nodes.Head().(*graphql.VariableDefinition)
+	last1 := p.nodes.Pop()
+	last2 := p.nodes.Pop()
+	last3 := p.nodes.Pop()
+	value, ok := last1.(*graphql.Value)
+	if ok {
+		variable, ok = last3.(*graphql.VariableDefinition)
+		variable.DefaultValue = value
+	} else {
+		p.visitNode(last3)
+		variable, ok = last2.(*graphql.VariableDefinition)
+	}	
 	typeT := (*C.struct_GraphQLAstNamedType)(C.GraphQLAstVariableDefinition_get_type(node))
 	typeName := C.GraphQLAstNamedType_get_name(typeT)
-	variableDef.Type.Name = C.GoString(C.GraphQLAstName_get_value(typeName))
-	//variableDef.Variable = variable
-	p.endVisitNode()
+	variable.Type.Name = C.GoString(C.GraphQLAstName_get_value(typeName))
+	variable.Variable = last1.(*graphql.Variable)
 }
 
 
@@ -168,7 +177,7 @@ func processVisitField(node *C.struct_GraphQLAstField, parser unsafe.Pointer) in
 	p := (*Parser)(parser)
 	field := &graphql.Field{}
 	p.visitNode(field)
-	return 0
+	return 1
 }
 
 //export processEndVisitField
@@ -182,7 +191,7 @@ func processVisitArgument(node *C.struct_GraphQLAstArgument, parser unsafe.Point
 	p := (*Parser)(parser)
 	argument := &graphql.Argument{}
 	p.visitNode(argument)
-	return 0
+	return 1
 }
 
 //export processEndVisitArgument
@@ -196,7 +205,7 @@ func processVisitFragmentSpread(node *C.struct_GraphQLAstFragmentSpread, parser 
 	p := (*Parser)(parser)
 	fragment := &graphql.FragmentSpread{}
 	p.visitNode(fragment)
-	return 0
+	return 1
 }
 
 //export processEndVisitFragmentSpread
@@ -210,7 +219,7 @@ func processVisitInlineFragment(node *C.struct_GraphQLAstInlineFragment, parser 
 	p := (*Parser)(parser)
 	fragment := &graphql.InlineFragment{}
 	p.visitNode(fragment)
-	return 0
+	return 1
 }
 
 //export processEndVisitInlineFragment
@@ -224,7 +233,7 @@ func processVisitFragmentDefinition(node *C.struct_GraphQLAstFragmentDefinition,
 	p := (*Parser)(parser)
 	fragment := &graphql.InlineFragment{}
 	p.visitNode(fragment)
-	return 0
+	return 1
 }
 
 //export processEndVisitFragmentDefinition
@@ -238,13 +247,17 @@ func processVisitVariable(node *C.struct_GraphQLAstVariable, parser unsafe.Point
 	p := (*Parser)(parser)
 	variable := &graphql.Variable{}
 	p.visitNode(variable)
-	return 0
+	return 1
 }
 
 //export processEndVisitVariable
 func processEndVisitVariable(node *C.struct_GraphQLAstVariable, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
-	p.endVisitNode()
+	variable := p.nodes.Head().(*graphql.Variable)
+	name := C.GraphQLAstVariable_get_name(node)
+	if name != nil {
+		variable.Name = C.GoString(C.GraphQLAstName_get_value(name))
+	}
 }
 
 //export processVisitIntValue
