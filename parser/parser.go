@@ -247,6 +247,10 @@ func processVisitFragmentSpread(node *C.struct_GraphQLAstFragmentSpread, parser 
 	if ok {
 	  parent.Field.SelectionSet = append(parent.Field.SelectionSet, selection)
 	}
+	fragDefinition, ok := p.nodes.Head().(*graphql.FragmentDefinition)
+	if ok {
+	  fragDefinition.SelectionSet = append(fragDefinition.SelectionSet, selection)
+	}
 	return 0
 }
 
