@@ -9,13 +9,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/tallstreet/graphql/ast"
 	"sevki.org/lib/prettyprint"
+	"github.com/tallstreet/graphql"
 )
 
 func TestKitchenSink(t *testing.T) {
 	t.Parallel()
-	var doc ast.Document
+	var doc graphql.Document
 	ks, _ := os.Open("../tests/relay-todo.graphql")
 	if err := New("kitchenSink", ks).Decode(&doc); err != nil {
 		t.Error(err.Error())

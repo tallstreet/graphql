@@ -231,7 +231,7 @@ func processVisitFragmentSpread(node *C.struct_GraphQLAstFragmentSpread, parser 
 			Name: C.GoString(C.GraphQLAstName_get_value(name)),
 		},
 	}
-	operation, ok := p.endVisitNode().(*graphql.Operation)
+	operation, ok := p.nodes.Head().(*graphql.Operation)
 	if ok {
 	  operation.SelectionSet = append(operation.SelectionSet, selection)
 	}
@@ -506,7 +506,6 @@ func parse(query string) (*C.struct_GraphQLAstNode, error) {
 
 func New(name string, r io.Reader) *Parser {
 	var doc graphql.Document
-
 	query, _ := ioutil.ReadAll(r)
 	p := &Parser{
 		name:     name,
