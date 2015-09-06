@@ -177,6 +177,14 @@ func processVisitField(node *C.struct_GraphQLAstField, parser unsafe.Pointer) in
 	if ok {
 	  operation.SelectionSet = append(operation.SelectionSet, selection)
 	}
+	parentField, ok := p.nodes.Head().(*graphql.Selection)
+	if ok {
+	  parentField.Field.SelectionSet = append(parentField.Field.SelectionSet, selection)
+	}
+	fragDefinition, ok := p.nodes.Head().(*graphql.FragmentDefinition)
+	if ok {
+	  fragDefinition.SelectionSet = append(fragDefinition.SelectionSet, selection)
+	}
 	p.visitNode(selection)
 	return 1
 }
@@ -234,6 +242,10 @@ func processVisitFragmentSpread(node *C.struct_GraphQLAstFragmentSpread, parser 
 	operation, ok := p.nodes.Head().(*graphql.Operation)
 	if ok {
 	  operation.SelectionSet = append(operation.SelectionSet, selection)
+	}
+	parent, ok := p.nodes.Head().(*graphql.Selection)
+	if ok {
+	  parent.Field.SelectionSet = append(parent.Field.SelectionSet, selection)
 	}
 	return 0
 }
