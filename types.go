@@ -17,7 +17,7 @@ const (
 type Document struct {
 	Operations          []*Operation
 	DefinitionSize      int
-	FragmentDefinitions []FragmentDefinition `json:",omitempty"`
+	FragmentDefinitions []*FragmentDefinition `json:",omitempty"`
 	EnumDefinitions     []EnumDefinition     `json:",omitempty"`
 	TypeDefinitions     []TypeDefinition     `json:",omitempty"`
 	TypeExtensions      []TypeExtension      `json:",omitempty"`
@@ -28,7 +28,7 @@ type Operation struct {
 	Type                OperationType        `json:",omitempty"`
 	Name                string               `json:",omitempty"`
 	SelectionSet        SelectionSet         `json:",omitempty"`
-	VariableDefinitions []VariableDefinition `json:",omitempty"`
+	VariableDefinitions []*VariableDefinition `json:",omitempty"`
 	Directives          []Directive          `json:",omitempty"`
 }
 
@@ -141,7 +141,9 @@ type Type struct {
 }
 
 // Value refers to a value
-type Value interface{}
+type Value struct{ 
+	Value    interface{}
+}
 
 // Interface descibes a set of methods a type must conform to to satisfy it.
 // TODO
@@ -181,6 +183,7 @@ type Variable struct {
 // Directive describes a directive which can alter behavior in different parts of a GraphQL Operation.
 type Directive struct {
 	Name  string
+	Arguments    Arguments    `json:",omitempty"`
 	Type  *Type  `json:",omitempty"`
 	Value *Value `json:",omitempty"`
 }

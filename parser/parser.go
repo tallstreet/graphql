@@ -64,11 +64,11 @@ import "C"
 
 import (
 	"fmt"
-	"log"
 	"io"
 	"io/ioutil"
 	"unsafe"
 	"errors"
+	"strconv"
 	
 	"github.com/tallstreet/graphql"
 	"github.com/oleiade/lane"
@@ -125,12 +125,10 @@ func processEndVisitOperationDefinition(node *C.struct_GraphQLAstOperationDefini
 //export processVisitVariableDefinition
 func processVisitVariableDefinition(node *C.struct_GraphQLAstVariableDefinition, parser unsafe.Pointer) int {
 	p := (*Parser)(parser)
-	//doc := p.nodes.Head().(*graphql.Document)
 	variable := &graphql.VariableDefinition {
 	}
-	/*
-	doc.AddDefinition(operation)
-	*/
+	operation := p.nodes.Head().(*graphql.Operation)
+	operation.VariableDefinitions = append(operation.VariableDefinitions, variable)
 	p.visitNode(variable)
 	return 1
 }
@@ -140,98 +138,144 @@ func processEndVisitVariableDefinition(node *C.struct_GraphQLAstVariableDefiniti
 	var variable *graphql.VariableDefinition
 	var ok bool
 	p := (*Parser)(parser)
-	last1 := p.nodes.Pop()
-	last2 := p.nodes.Pop()
-	last3 := p.nodes.Pop()
+	last1 := p.endVisitNode()
+	last2 := p.endVisitNode()
+	last3 := p.endVisitNode()
 	value, ok := last1.(*graphql.Value)
 	if ok {
 		variable, ok = last3.(*graphql.VariableDefinition)
+		variable.Variable = last2.(*graphql.Variable)
 		variable.DefaultValue = value
 	} else {
 		p.visitNode(last3)
 		variable, ok = last2.(*graphql.VariableDefinition)
+		variable.Variable = last1.(*graphql.Variable)
 	}	
 	typeT := (*C.struct_GraphQLAstNamedType)(C.GraphQLAstVariableDefinition_get_type(node))
 	typeName := C.GraphQLAstNamedType_get_name(typeT)
 	variable.Type.Name = C.GoString(C.GraphQLAstName_get_value(typeName))
-	variable.Variable = last1.(*graphql.Variable)
+	
 }
 
 
 //export processVisitSelectionSet
 func processVisitSelectionSet(node *C.struct_GraphQLAstSelectionSet, parser unsafe.Pointer) int {
-	p := (*Parser)(parser)
-	selectionSet := &graphql.SelectionSet{}
-	p.visitNode(selectionSet)
-	return 0
+	return 1
 }
 
 //export processEndVisitSelectionSet
 func processEndVisitSelectionSet(node *C.struct_GraphQLAstSelectionSet, parser unsafe.Pointer) {
-	p := (*Parser)(parser)
-	p.endVisitNode()
 }
 
 //export processVisitField
 func processVisitField(node *C.struct_GraphQLAstField, parser unsafe.Pointer) int {
 	p := (*Parser)(parser)
-	field := &graphql.Field{}
-	p.visitNode(field)
+	selection := &graphql.Selection{
+		Field: &graphql.Field{},
+	}
+	operation, ok := p.nodes.Head().(*graphql.Operation)
+	if ok {
+	  operation.SelectionSet = append(operation.SelectionSet, selection)
+	}
+	p.visitNode(selection)
 	return 1
 }
 
 //export processEndVisitField
 func processEndVisitField(node *C.struct_GraphQLAstField, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
-	p.endVisitNode()
+	field := p.nodes.Head().(*graphql.Selection)
+	if field.Field != nil {
+		alias := C.GraphQLAstField_get_alias(node)
+		if alias != nil {
+			field.Field.Alias = C.GoString(C.GraphQLAstName_get_value(alias))
+		}
+		name := C.GraphQLAstField_get_name(node)
+		if name != nil {
+			field.Field.Name = C.GoString(C.GraphQLAstName_get_value(name))
+		}
+		p.endVisitNode()
+	}
 }
 
 //export processVisitArgument
 func processVisitArgument(node *C.struct_GraphQLAstArgument, parser unsafe.Pointer) int {
-	p := (*Parser)(parser)
-	argument := &graphql.Argument{}
-	p.visitNode(argument)
 	return 1
 }
 
 //export processEndVisitArgument
 func processEndVisitArgument(node *C.struct_GraphQLAstArgument, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
-	p.endVisitNode()
+	name := C.GraphQLAstArgument_get_name(node)
+	value := p.endVisitNode()
+	argument := graphql.Argument {
+		Name: C.GoString(C.GraphQLAstName_get_value(name)), 
+		Value: value,
+	}
+	selection, ok := p.nodes.Head().(*graphql.Selection)
+	if ok {
+		selection.Field.Arguments = append(selection.Field.Arguments, argument)
+	}
+	directive, ok := p.nodes.Head().(*graphql.Directive)
+	if ok {
+		directive.Arguments = append(directive.Arguments, argument)
+	}
 }
 
 //export processVisitFragmentSpread
 func processVisitFragmentSpread(node *C.struct_GraphQLAstFragmentSpread, parser unsafe.Pointer) int {
 	p := (*Parser)(parser)
-	fragment := &graphql.FragmentSpread{}
-	p.visitNode(fragment)
-	return 1
+	name := C.GraphQLAstFragmentSpread_get_name(node)
+	selection := &graphql.Selection{
+		FragmentSpread: &graphql.FragmentSpread{
+			Name: C.GoString(C.GraphQLAstName_get_value(name)),
+		},
+	}
+	operation, ok := p.endVisitNode().(*graphql.Operation)
+	if ok {
+	  operation.SelectionSet = append(operation.SelectionSet, selection)
+	}
+	return 0
 }
 
 //export processEndVisitFragmentSpread
 func processEndVisitFragmentSpread(node *C.struct_GraphQLAstFragmentSpread, parser unsafe.Pointer) {
-	p := (*Parser)(parser)
-	p.endVisitNode()
 }
 
 //export processVisitInlineFragment
 func processVisitInlineFragment(node *C.struct_GraphQLAstInlineFragment, parser unsafe.Pointer) int {
 	p := (*Parser)(parser)
-	fragment := &graphql.InlineFragment{}
-	p.visitNode(fragment)
+	selection := &graphql.Selection{
+		InlineFragment: &graphql.InlineFragment{},
+	}
+	operation, ok := p.endVisitNode().(*graphql.Operation)
+	if ok {
+	  operation.SelectionSet = append(operation.SelectionSet, selection)
+	}
+	p.visitNode(selection)
 	return 1
 }
 
 //export processEndVisitInlineFragment
 func processEndVisitInlineFragment(node *C.struct_GraphQLAstInlineFragment, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
+	
+	fragment := p.nodes.Head().(*graphql.Selection).InlineFragment
+	condition := C.GraphQLAstInlineFragment_get_type_condition(node)
+	condition_name := C.GraphQLAstNamedType_get_name(condition)
+	fragment.TypeCondition = C.GoString(C.GraphQLAstName_get_value(condition_name))
 	p.endVisitNode()
 }
 
 //export processVisitFragmentDefinition
 func processVisitFragmentDefinition(node *C.struct_GraphQLAstFragmentDefinition, parser unsafe.Pointer) int {
 	p := (*Parser)(parser)
-	fragment := &graphql.InlineFragment{}
+	doc := p.nodes.Head().(*graphql.Document)
+	name := C.GraphQLAstFragmentDefinition_get_name(node)
+	fragment := &graphql.FragmentDefinition {
+		Name: C.GoString(C.GraphQLAstName_get_value(name)),
+	}
+	doc.FragmentDefinitions = append(doc.FragmentDefinitions, fragment)
 	p.visitNode(fragment)
 	return 1
 }
@@ -239,216 +283,211 @@ func processVisitFragmentDefinition(node *C.struct_GraphQLAstFragmentDefinition,
 //export processEndVisitFragmentDefinition
 func processEndVisitFragmentDefinition(node *C.struct_GraphQLAstFragmentDefinition, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
+	fragment := p.nodes.Head().(*graphql.FragmentDefinition)
+	condition := C.GraphQLAstFragmentDefinition_get_type_condition(node)
+	condition_name := C.GraphQLAstNamedType_get_name(condition)
+	fragment.TypeCondition = C.GoString(C.GraphQLAstName_get_value(condition_name))
 	p.endVisitNode()
 }
 
 //export processVisitVariable
 func processVisitVariable(node *C.struct_GraphQLAstVariable, parser unsafe.Pointer) int {
-	p := (*Parser)(parser)
-	variable := &graphql.Variable{}
-	p.visitNode(variable)
 	return 1
 }
 
 //export processEndVisitVariable
 func processEndVisitVariable(node *C.struct_GraphQLAstVariable, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
-	variable := p.nodes.Head().(*graphql.Variable)
+	variable := &graphql.Variable {}
 	name := C.GraphQLAstVariable_get_name(node)
 	if name != nil {
 		variable.Name = C.GoString(C.GraphQLAstName_get_value(name))
 	}
+	p.visitNode(variable)
 }
 
 //export processVisitIntValue
 func processVisitIntValue(node *C.struct_GraphQLAstIntValue, parser unsafe.Pointer) int {
-	p := (*Parser)(parser)
-	value := C.GraphQLAstIntValue_get_value(node)
-	p.visitNode(value)
 	return 1
 }
 
 //export processEndVisitIntValue
 func processEndVisitIntValue(node *C.struct_GraphQLAstIntValue, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
-	p.endVisitNode()
+	value := C.GoString(C.GraphQLAstIntValue_get_value(node))
+	i, _ := strconv.ParseInt(value, 10, 64)
+	v := &graphql.Value{ Value: i }
+	p.visitNode(v)
 }
 
 //export processVisitFloatValue
 func processVisitFloatValue(node *C.struct_GraphQLAstFloatValue, parser unsafe.Pointer) int {
-	p := (*Parser)(parser)
-	value := C.GraphQLAstFloatValue_get_value(node)
-	p.visitNode(value)
 	return 1
 }
 
 //export processEndVisitFloatValue
 func processEndVisitFloatValue(node *C.struct_GraphQLAstFloatValue, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
-	p.endVisitNode()
+	value := C.GoString(C.GraphQLAstFloatValue_get_value(node))
+	f, _ := strconv.ParseFloat(value, 64)
+	v := &graphql.Value{ Value: f }
+	p.visitNode(v)
 }
 
 //export processVisitStringValue
 func processVisitStringValue(node *C.struct_GraphQLAstStringValue, parser unsafe.Pointer) int {
-	p := (*Parser)(parser)
-	value := C.GraphQLAstStringValue_get_value(node)
-	p.visitNode(value)
 	return 1
 }
 
 //export processEndVisitStringValue
 func processEndVisitStringValue(node *C.struct_GraphQLAstStringValue, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
-	p.endVisitNode()
+	value := C.GraphQLAstStringValue_get_value(node)
+	v := &graphql.Value{ Value: C.GoString(value)}
+	p.visitNode(v)
 }
 
 //export processVisitBooleanValue
 func processVisitBooleanValue(node *C.struct_GraphQLAstBooleanValue, parser unsafe.Pointer) int {
-	p := (*Parser)(parser)
-	value := C.GraphQLAstBooleanValue_get_value(node)
-	p.visitNode(value)
 	return 1
 }
 
 //export processEndVisitBooleanValue
 func processEndVisitBooleanValue(node *C.struct_GraphQLAstBooleanValue, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
-	p.endVisitNode()
+	value := C.GraphQLAstBooleanValue_get_value(node)
+	v := &graphql.Value{ Value: value == 1 }
+	p.visitNode(v)
 }
 
 //export processVisitEnumValue
 func processVisitEnumValue(node *C.struct_GraphQLAstEnumValue, parser unsafe.Pointer) int {
-	p := (*Parser)(parser)
-	value := C.GraphQLAstEnumValue_get_value(node)
-	p.visitNode(value)
 	return 1
 }
 
 //export processEndVisitEnumValue
 func processEndVisitEnumValue(node *C.struct_GraphQLAstEnumValue, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
-	p.endVisitNode()
+	value := C.GraphQLAstEnumValue_get_value(node)
+	v := &graphql.Value{ Value: C.GoString(value)}
+	p.visitNode(v)
 }
 
 
 //export processVisitArrayValue
 func processVisitArrayValue(node *C.struct_GraphQLAstArrayValue, parser unsafe.Pointer) int {
-	p := (*Parser)(parser)
-	value := 200 //C.GraphQLAstArrayValue_get_value(node)
-	p.visitNode(value)
 	return 1
 }
 
 //export processEndVisitArrayValue
 func processEndVisitArrayValue(node *C.struct_GraphQLAstArrayValue, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
-	p.endVisitNode()
+	size := int(C.GraphQLAstArrayValue_get_values_size(node))
+	array := make([]interface{}, size, size)
+	for i := size - 1; i > 0; i-- {
+		array[i] = p.endVisitNode()
+	}
+	v := &graphql.Value{ Value: array }
+	p.visitNode(v)
 }
 
 //export processVisitObjectValue
 func processVisitObjectValue(node *C.struct_GraphQLAstObjectValue, parser unsafe.Pointer) int {
-	p := (*Parser)(parser)
-	value := 200//C.GraphQLAstObjectValue_get_value(node)
-	p.visitNode(value)
 	return 1
 }
 
 //export processEndVisitObjectValue
 func processEndVisitObjectValue(node *C.struct_GraphQLAstObjectValue, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
-	p.endVisitNode()
+	size := int(C.GraphQLAstObjectValue_get_fields_size(node))
+	object := make(map[string]interface{}, size)
+	for i := 0; i < size; i++ {
+		val := p.endVisitNode().(map[string]interface{})
+		for k, v := range val {
+		    object[k] = v
+		}
+	}
+	v := &graphql.Value{ Value: object }
+	p.visitNode(v)
 }
 
 //export processVisitObjectField
 func processVisitObjectField(node *C.struct_GraphQLAstObjectField, parser unsafe.Pointer) int {
-	p := (*Parser)(parser)
-	value := C.GraphQLAstObjectField_get_value(node)
-	p.visitNode(value)
 	return 1
 }
 
 //export processEndVisitObjectField
 func processEndVisitObjectField(node *C.struct_GraphQLAstObjectField, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
-	p.endVisitNode()
+	field := make(map[string]interface{}, 1)
+	name := C.GraphQLAstObjectField_get_name(node)
+	value := p.endVisitNode()
+	field[C.GoString(C.GraphQLAstName_get_value(name))] = value
+	p.visitNode(field)
 }
 
 //export processVisitDirective
 func processVisitDirective(node *C.struct_GraphQLAstDirective, parser unsafe.Pointer) int {
 	p := (*Parser)(parser)
-	value := 200//C.GraphQLAstDirective_get_value(node)
-	p.visitNode(value)
+	directive := &graphql.Directive{}
+	p.visitNode(directive)
 	return 1
 }
 
 //export processEndVisitDirective
 func processEndVisitDirective(node *C.struct_GraphQLAstDirective, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
+	directive := p.nodes.Head().(*graphql.Directive)
+	name := C.GraphQLAstDirective_get_name(node)
+	if name != nil {
+		directive.Name = C.GoString(C.GraphQLAstName_get_value(name))
+	}
 	p.endVisitNode()
 }
 
 //export processVisitNamedType
 func processVisitNamedType(node *C.struct_GraphQLAstNamedType, parser unsafe.Pointer) int {
-	p := (*Parser)(parser)
-	value := 200//C.GraphQLAstNamedType_get_value(node)
-	p.visitNode(value)
-	return 1
+	return 0
 }
 
 //export processEndVisitNamedType
 func processEndVisitNamedType(node *C.struct_GraphQLAstNamedType, parser unsafe.Pointer) {
-	p := (*Parser)(parser)
-	p.endVisitNode()
 }
 
 //export processVisitListType
 func processVisitListType(node *C.struct_GraphQLAstListType, parser unsafe.Pointer) int {
-	p := (*Parser)(parser)
-	value := 200//C.GraphQLAstListType_get_value(node)
-	p.visitNode(value)
-	return 1
+	return 0
 }
 
 //export processEndVisitListType
 func processEndVisitListType(node *C.struct_GraphQLAstListType, parser unsafe.Pointer) {
-	p := (*Parser)(parser)
-	p.endVisitNode()
 }
 
 //export processVisitNonNullType
 func processVisitNonNullType(node *C.struct_GraphQLAstNonNullType, parser unsafe.Pointer) int {
-	p := (*Parser)(parser)
-	value := 200 //C.GraphQLAstNonNullType_get_value(node)
-	p.visitNode(value)
-	return 1
+	return 0
 }
 
 //export processEndVisitNonNullType
 func processEndVisitNonNullType(node *C.struct_GraphQLAstNonNullType, parser unsafe.Pointer) {
-	p := (*Parser)(parser)
-	p.endVisitNode()
 }
 
 //export processVisitName
 func processVisitName(node *C.struct_GraphQLAstName, parser unsafe.Pointer) int {
-	p := (*Parser)(parser)
-	value := C.GraphQLAstName_get_value(node)
-	p.visitNode(value)
-	return 1
+	return 0
 }
 
 //export processEndVisitName
 func processEndVisitName(node *C.struct_GraphQLAstName, parser unsafe.Pointer) {
-	p := (*Parser)(parser)
-	p.endVisitNode()
 }
 
 func (p *Parser) visitNode(node interface{}) {
 	p.nodes.Push(node)
 }
 
-func (p *Parser) endVisitNode() {
-	p.nodes.Pop()
+func (p *Parser) endVisitNode() interface{} {
+	node := p.nodes.Pop()
+	return node
 }
 
 func parse(query string) (*C.struct_GraphQLAstNode, error) {
@@ -469,7 +508,6 @@ func New(name string, r io.Reader) *Parser {
 	var doc graphql.Document
 
 	query, _ := ioutil.ReadAll(r)
-	log.Printf(string(query));
 	p := &Parser{
 		name:     name,
 		query:    string(query),
