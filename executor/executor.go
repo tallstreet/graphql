@@ -106,7 +106,7 @@ func (e *Executor) Resolve(ctx context.Context, partial interface{}, field *grap
 			results <- fieldResult{
 				FieldName: fieldName, Value: resolved, Err: err,
 			}
-		}(selection)
+		}(*selection)
 	}
 	go func() {
 		wg.Wait()

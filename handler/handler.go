@@ -8,12 +8,12 @@ import (
 	"net/http"
 
 	
-	"github.com/tallstreet/graphql/ast"
+	"github.com/tallstreet/graphql"
 	"github.com/tallstreet/graphql/executor"
-	//"github.com/tallstreet/graphql/executor/tracer"
+	"github.com/tallstreet/graphql/executor/tracer"
 	"github.com/tallstreet/graphql/parser"
 	"sevki.org/lib/prettyprint"
-	//"golang.org/x/net/context"
+	"golang.org/x/net/context"
 )
 
 // Error represents an error the occured while parsing a graphql query or while generating a response.
@@ -92,7 +92,7 @@ func (h *ExecutorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//TODO(tallstreet): reject non-GET/OPTIONS requests
 	q := r.URL.Query().Get("q")
 	*/
-	var doc ast.Document
+	var doc graphql.Document
 	if err := parser.New("graphql", strings.NewReader(q)).Decode(&doc); err != nil {
 		
 		log.Printf(err.Error())
@@ -112,8 +112,9 @@ func (h *ExecutorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, err)
 		return
 	}
+	*/
 	
-
+	operation := doc.Operations[0]
 	asjson, _ := json.MarshalIndent(operation, "", " ")
 	log.Println(string(asjson))
 	// if err := h.validator.Validate(operation); err != nil { writeErr(w, err); return }
@@ -140,7 +141,4 @@ func (h *ExecutorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		t.Done()
 		result.Trace = t
 	}
-	*/
-
-	writeJSONIndent(w, doc, "  ")
 }
