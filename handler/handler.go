@@ -90,7 +90,6 @@ func (h *ExecutorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	
 	/*
 	//TODO(tallstreet): reject non-GET/OPTIONS requests
-	q := r.URL.Query().Get("q")
 	*/
 	var doc graphql.Document
 	if err := parser.New("graphql", strings.NewReader(q)).Decode(&doc); err != nil {
@@ -98,44 +97,36 @@ func (h *ExecutorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Printf(err.Error())
 		
 	} else {
-		//		fs, _ := os.Open("../tests/complex-as-possible.graphql")
-		//		e, _ := ioutil.ReadAll(fs)
-		//		log.Printf(string(e))
 		log.Printf(prettyprint.AsJSON(doc))
 	}
 	
-	/*
-	log.Println("query:", q)
-	operation, err := parser.ParseOperation([]byte(q))
-	if err != nil {
-		log.Println("error parsing:", err)
-		writeErr(w, err)
-		return
-	}
-	*/
 	
-	operation := doc.Operations[0]
-	asjson, _ := json.MarshalIndent(operation, "", " ")
-	log.Println(string(asjson))
-	// if err := h.validator.Validate(operation); err != nil { writeErr(w, err); return }
-	ctx := context.Background()
-	if r.Header.Get("X-Trace-ID") != "" {
-		t, err := tracer.FromRequest(r)
-		if err == nil {
-			ctx = tracer.NewContext(ctx, t)
+	parser.InlineFragments(&doc)
+	
+	for o := range doc.Operations {
+		operation := doc.Operations[o]
+		asjson, _ := json.MarshalIndent(operation, "", " ")
+		log.Println(string(asjson))
+		// if err := h.validator.Validate(operation); err != nil { writeErr(w, err); return }
+		ctx := context.Background()
+		if r.Header.Get("X-Trace-ID") != "" {
+			t, err := tracer.FromRequest(r)
+			if err == nil {
+				ctx = tracer.NewContext(ctx, t)
+			}
 		}
-	}
-	ctx = context.WithValue(ctx, "http_request", r)
-	if r.Header.Get("X-GraphQL-Only-Parse") == "1" {
-		writeJSONIndent(w, operation, " ")
-		return
-	}
+		ctx = context.WithValue(ctx, "http_request", r)
+		if r.Header.Get("X-GraphQL-Only-Parse") == "1" {
+			writeJSONIndent(w, operation, " ")
+			return
+		}
 
-	data, err := h.executor.HandleOperation(ctx, operation)
-	result := Result{Data: data}
-	if err != nil {
-		w.WriteHeader(400)
-		result.Error = &Error{Message: err.Error()}
+		data, err := h.executor.HandleOperation(ctx, operation)
+		result := Result{Data: data}
+		if err != nil {
+			w.WriteHeader(400)
+			result.Error = &Error{Message: err.Error()}
+		}
 	}
 	if t, ok := tracer.FromContext(ctx); ok {
 		t.Done()
