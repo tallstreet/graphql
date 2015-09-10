@@ -23,6 +23,15 @@ type Document struct {
 	TypeExtensions      []TypeExtension      `json:",omitempty"`
 }
 
+func (doc *Document) LookupFragmentByName(name string) *FragmentDefinition {
+	for f := range doc.FragmentDefinitions {
+		if doc.FragmentDefinitions[f].Name == name {
+			return doc.FragmentDefinitions[f]
+		}
+	}
+	return nil
+}
+
 // Operation is either a read or mutation in GraphQL.
 type Operation struct {
 	Type                OperationType        `json:",omitempty"`

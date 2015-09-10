@@ -69,6 +69,8 @@ import (
 	"unsafe"
 	"errors"
 	"strconv"
+	"reflect"
+	"log"
 	
 	"github.com/tallstreet/graphql"
 	"github.com/oleiade/lane"
@@ -178,8 +180,11 @@ func processVisitField(node *C.struct_GraphQLAstField, parser unsafe.Pointer) in
 	  operation.SelectionSet = append(operation.SelectionSet, selection)
 	}
 	parentField, ok := p.nodes.Head().(*graphql.Selection)
-	if ok {
+	if ok && parentField.Field != nil {
 	  parentField.Field.SelectionSet = append(parentField.Field.SelectionSet, selection)
+	}
+	if ok && parentField.InlineFragment != nil {
+		parentField.InlineFragment.SelectionSet = append(parentField.InlineFragment.SelectionSet, selection)
 	}
 	fragDefinition, ok := p.nodes.Head().(*graphql.FragmentDefinition)
 	if ok {
@@ -498,11 +503,13 @@ func processEndVisitName(node *C.struct_GraphQLAstName, parser unsafe.Pointer) {
 }
 
 func (p *Parser) visitNode(node interface{}) {
+	log.Printf("VISITING %s", reflect.TypeOf(node))
 	p.nodes.Push(node)
 }
 
 func (p *Parser) endVisitNode() interface{} {
 	node := p.nodes.Pop()
+	log.Printf("ENDING %s", reflect.TypeOf(node))
 	return node
 }
 

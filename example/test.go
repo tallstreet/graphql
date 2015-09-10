@@ -20,7 +20,7 @@ import (
 
 func main() {
 	var doc graphql.Document
-	fs, _ := os.Open("./tests/kitchen-sink.graphql")
+	fs, _ := os.Open("./tests/relay-todo.graphql")
 	if err := parser.New("graphql", fs).Decode(&doc); err != nil {
 		
 		log.Printf(err.Error())
@@ -30,4 +30,7 @@ func main() {
 		log.Printf(prettyprint.AsJSON(doc))
 		log.Print(doc.DefinitionSize)
 	}
+	
+	parser.InlineFragments(&doc)
+	log.Printf(prettyprint.AsJSON(doc.Operations[0]))
 }
