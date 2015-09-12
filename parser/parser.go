@@ -199,13 +199,15 @@ func processEndVisitField(node *C.struct_GraphQLAstField, parser unsafe.Pointer)
 	p := (*Parser)(parser)
 	field := p.nodes.Head().(*graphql.Selection)
 	if field.Field != nil {
-		alias := C.GraphQLAstField_get_alias(node)
-		if alias != nil {
-			field.Field.Alias = C.GoString(C.GraphQLAstName_get_value(alias))
-		}
 		name := C.GraphQLAstField_get_name(node)
 		if name != nil {
 			field.Field.Name = C.GoString(C.GraphQLAstName_get_value(name))
+		}
+		alias := C.GraphQLAstField_get_alias(node)
+		if alias != nil {
+			field.Field.Alias = C.GoString(C.GraphQLAstName_get_value(alias))
+		} else {
+			field.Field.Alias = field.Field.Name
 		}
 		p.endVisitNode()
 	}

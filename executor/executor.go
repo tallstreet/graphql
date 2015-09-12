@@ -24,7 +24,7 @@ func New(schema *schema.Schema) *Executor {
 func (e *Executor) HandleOperation(ctx context.Context, o *graphql.Operation) (interface{}, error) {
 	rootSelections := o.SelectionSet
 	rootFields := e.schema.RootFields()
-	result := make([]interface{}, 0)
+	result := make(map[string]interface{})
 
 	for _, selection := range rootSelections {
 		rootFieldHandler, ok := rootFields[selection.Field.Name]
@@ -39,7 +39,7 @@ func (e *Executor) HandleOperation(ctx context.Context, o *graphql.Operation) (i
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, resolved)
+		result[selection.Field.Alias] = resolved
 	}
 	return result, nil
 }

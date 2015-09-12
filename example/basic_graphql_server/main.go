@@ -3,9 +3,38 @@
 // Example:
 //  $ go get github.com/tallstreet/graphql/example/basic_graphql_server
 //  $ basic_graphql_server &
-//  $ curl -g 'http://localhost:8080/?q={__schema{root_fields{name,description}}}'
-//  {"data":[{"root_fields":[{"description": "Schema entry root field","name":"__schema"}]}}]
-//
+//  $ curl -g -XPOST 'http://localhost:8080/' --data-binary '{ "query": "{__schema{root_fields{name,description}}}"}'
+// {
+//   "data": {
+//     "__schema": {
+//       "root_fields": [
+//         {
+//           "description": "Schema entry root field",
+//           "name": "__schema"
+//         },
+//         {
+//           "description": "Provides the current server uptime",
+//           "name": "uptime"
+//         },
+//         {
+//           "description": "Provides the current server time",
+//           "name": "now"
+//         },
+//         {
+//           "description": "Query registered types by name",
+//           "name": "__type"
+//         }
+//       ]
+//     }
+//   }
+// }
+//  $ curl -g -XPOST 'http://localhost:8080/' --data-binary '{ "query": "query rootFields { uptime, now} "}'
+//  {
+//  "data": {
+//    "def": 177.898958761,
+//    "now": "2015-09-12T20:25:46.065224697+01:00"
+//  }
+// }
 // Here we see the server showing the available root fields ("schema").
 package main
 

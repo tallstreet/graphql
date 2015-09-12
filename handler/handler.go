@@ -103,6 +103,7 @@ func (h *ExecutorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	
 	parser.InlineFragments(&doc)
 	
+	var result = Result{}
 	for o := range doc.Operations {
 		operation := doc.Operations[o]
 		asjson, _ := json.MarshalIndent(operation, "", " ")
@@ -122,14 +123,17 @@ func (h *ExecutorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		data, err := h.executor.HandleOperation(ctx, operation)
-		result := Result{Data: data}
 		if err != nil {
 			w.WriteHeader(400)
 			result.Error = &Error{Message: err.Error()}
+		} else {
+			result.Data = data
+		}
+		if t, ok := tracer.FromContext(ctx); ok {
+			t.Done()
+			result.Trace = t
 		}
 	}
-	if t, ok := tracer.FromContext(ctx); ok {
-		t.Done()
-		result.Trace = t
-	}
+	
+	writeJSONIndent(w, result, "  ")
 }
