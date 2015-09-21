@@ -56,8 +56,8 @@ type fieldResult struct {
 	Err       error
 }
 
-func (e *Executor) findFields(selectionSet graphql.SelectionSet) ([]*graphql.Field) {
-	
+func (e *Executor) findFields(selectionSet graphql.SelectionSet) []*graphql.Field {
+
 	fields := []*graphql.Field{}
 	for _, selection := range selectionSet {
 		if selection.InlineFragment != nil {
@@ -70,6 +70,39 @@ func (e *Executor) findFields(selectionSet graphql.SelectionSet) ([]*graphql.Fie
 		}
 	}
 	return fields
+}
+
+func (e *Executor) mergeValues(oldValue interface{}, newValue interface{}) interface{} {
+	if isSlice(oldValue) {
+		oldValueSlice := oldValue.([]interface{})
+		newValueSlice := newValue.([]interface{})
+		newSlice := make([]interface{}, 0, len(oldValueSlice))
+		for k := range oldValueSlice {
+			newSlice = append(newSlice, e.mergeValues(oldValueSlice[k], newValueSlice[k]))
+		}
+		return newSlice
+	}
+	if reflect.TypeOf(oldValue).Kind() == reflect.Map {
+		oldValueMap := oldValue.(map[string]interface{})
+		newValueMap := newValue.(map[string]interface{})
+		newMap := newValueMap
+		for k := range oldValueMap {
+			if oldValueMap[k] != nil && newValueMap[k] != nil {
+				newMap[k] = e.mergeValues(oldValueMap[k], newValueMap[k])
+			} else {
+				newMap[k] = oldValueMap[k]
+			}
+		}
+		return newMap
+
+	}
+	if oldValue != nil {
+		return oldValue
+	}
+	if newValue != nil {
+		return newValue
+	}
+	return nil
 }
 
 func (e *Executor) Resolve(ctx context.Context, partial interface{}, field *graphql.Field) (interface{}, error) {
@@ -129,7 +162,11 @@ func (e *Executor) Resolve(ctx context.Context, partial interface{}, field *grap
 		if r.Err != nil {
 			return nil, r.Err
 		}
-		result[r.FieldName] = r.Value
+		if result[r.FieldName] != nil {
+			result[r.FieldName] = e.mergeValues(result[r.FieldName], r.Value)
+		} else {
+			result[r.FieldName] = r.Value
+		}
 	}
 	return result, nil
 }
