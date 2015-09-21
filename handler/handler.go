@@ -12,7 +12,6 @@ import (
 	"github.com/tallstreet/graphql/executor"
 	"github.com/tallstreet/graphql/executor/tracer"
 	"github.com/tallstreet/graphql/parser"
-	"sevki.org/lib/prettyprint"
 	"golang.org/x/net/context"
 )
 
@@ -96,10 +95,7 @@ func (h *ExecutorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		
 		log.Printf(err.Error())
 		
-	} else {
-		log.Printf(prettyprint.AsJSON(doc))
 	}
-	
 	
 	parser.InlineFragments(&doc)
 	

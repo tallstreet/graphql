@@ -69,8 +69,6 @@ import (
 	"unsafe"
 	"errors"
 	"strconv"
-	"reflect"
-	"log"
 	
 	"github.com/tallstreet/graphql"
 	"github.com/oleiade/lane"
@@ -505,13 +503,13 @@ func processEndVisitName(node *C.struct_GraphQLAstName, parser unsafe.Pointer) {
 }
 
 func (p *Parser) visitNode(node interface{}) {
-	log.Printf("VISITING %s", reflect.TypeOf(node))
+	//log.Printf("VISITING %s", reflect.TypeOf(node))
 	p.nodes.Push(node)
 }
 
 func (p *Parser) endVisitNode() interface{} {
 	node := p.nodes.Pop()
-	log.Printf("ENDING %s", reflect.TypeOf(node))
+	//log.Printf("ENDING %s", reflect.TypeOf(node))
 	return node
 }
 
