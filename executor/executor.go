@@ -2,7 +2,6 @@ package executor
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"sync"
 
