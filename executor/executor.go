@@ -2,7 +2,6 @@ package executor
 
 import (
 	"fmt"
-	//"log"
 	"reflect"
 	"sync"
 
@@ -57,45 +56,6 @@ type fieldResult struct {
 	Err       error
 }
 
-
-func (e *Executor) callHandler(ctx context.Context, partial interface{}, field *graphql.Field, typeInfo schema.GraphQLTypeInfo, results *chan fieldResult, wg *sync.WaitGroup, child *graphql.Field) {
-	defer wg.Done()
-	
-	fieldName := child.Name
-	fieldHandler, _ := typeInfo.Fields[fieldName]
-	partial, err := fieldHandler.Func(ctx, e, child)
-	if err != nil {
-		*results <- fieldResult{Err: err}
-		return
-	}
-	resolved, err := e.Resolve(ctx, partial, child)
-	if err != nil {
-		*results <- fieldResult{Err: err}
-		return
-	}
-	if child.Alias != "" {
-		fieldName = child.Alias
-	}
-	*results <- fieldResult{
-		FieldName: fieldName, Value: resolved, Err: err,
-	}
-}
-
-func (e *Executor) resolveSelection(ctx context.Context, partial interface{}, field *graphql.Field, typeInfo schema.GraphQLTypeInfo, results *chan fieldResult, wg *sync.WaitGroup, child *graphql.Field)  (interface{}, error) {
-	graphQLValue, _ := partial.(schema.GraphQLType)
-
-	if child != nil {
-		fieldName := child.Name
-		_, ok := typeInfo.Fields[fieldName]
-		if !ok {
-			return nil, fmt.Errorf("No handler for field '%s' on type '%T'", fieldName, graphQLValue)
-		}
-		wg.Add(1)
-		go e.callHandler(ctx, partial, field, typeInfo, results, wg, child)
-	}
-	return nil, nil
-}
-
 func (e *Executor) Resolve(ctx context.Context, partial interface{}, field *graphql.Field) (interface{}, error) {
 	if partial != nil && isSlice(partial) {
 		return e.resolveSlice(ctx, partial, field)
@@ -110,33 +70,42 @@ func (e *Executor) Resolve(ctx context.Context, partial interface{}, field *grap
 	if len(field.SelectionSet) == 0 {
 		return nil, fmt.Errorf("Cannot return a '%T' as a leaf", graphQLValue)
 	}
-	
-	fields := []*graphql.Field{}
-	for _, selection := range field.SelectionSet {
-		if selection.InlineFragment != nil {
-			selectionSet := selection.InlineFragment.SelectionSet
-			for _, selectionSetField := range selectionSet {
-				fields = append(fields, selectionSetField.Field)
-			}
-		}
-		
-		if selection.Field != nil {
-			fields = append(fields, selection.Field)
-		}
-	}
-	
-	
 
 	result := map[string]interface{}{}
 	typeInfo := schema.WithIntrospectionField(graphQLValue.GraphQLTypeInfo())
 	results := make(chan fieldResult)
 	wg := sync.WaitGroup{}
 
-	for _, child := range fields {
-		_, err := e.resolveSelection(ctx, partial, field, typeInfo, &results, &wg, child)
-		if err != nil {
-			return nil, err
+	for _, selection := range field.SelectionSet {
+		
+		if selection.Field == nil {
+			continue
 		}
+		fieldName := selection.Field.Name
+		fieldHandler, ok := typeInfo.Fields[fieldName]
+		if !ok {
+			return nil, fmt.Errorf("No handler for field '%s' on type '%T'", fieldName, graphQLValue)
+		}
+		wg.Add(1)
+		go func(selection graphql.Selection) {
+			defer wg.Done()
+			partial, err := fieldHandler.Func(ctx, e, selection.Field)
+			if err != nil {
+				results <- fieldResult{Err: err}
+				return
+			}
+			resolved, err := e.Resolve(ctx, partial, selection.Field)
+			if err != nil {
+				results <- fieldResult{Err: err}
+				return
+			}
+			if selection.Field.Alias != "" {
+				fieldName = selection.Field.Alias
+			}
+			results <- fieldResult{
+				FieldName: fieldName, Value: resolved, Err: err,
+			}
+		}(*selection)
 	}
 	go func() {
 		wg.Wait()
