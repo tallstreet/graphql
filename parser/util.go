@@ -24,12 +24,14 @@ func inlineFragmentsInSelection(doc *graphql.Document, j *graphql.SelectionSet) 
 		s := (*j)[i]
 		if s.FragmentSpread != nil {
 			frag := doc.LookupFragmentByName(s.FragmentSpread.Name)
-			s.InlineFragment = &graphql.InlineFragment {
-				frag.TypeCondition,
-				frag.Directives,
-				frag.SelectionSet,
+			if frag != nil {
+				s.InlineFragment = &graphql.InlineFragment {
+					frag.TypeCondition,
+					frag.Directives,
+					frag.SelectionSet,
+				}
+				inlineFragmentsInSelection(doc, &frag.SelectionSet)
 			}
-			inlineFragmentsInSelection(doc, &frag.SelectionSet)
 		}
 		if s.Field != nil {
 			inlineFragmentsInSelection(doc, &s.Field.SelectionSet)
