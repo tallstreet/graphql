@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"log"
+	"sync"
 	"strings"
 	"net/http"
 
@@ -36,11 +37,12 @@ type Result struct {
 // ExecutorHandler makes a executor.Executor querable via HTTP
 type ExecutorHandler struct {
 	executor *executor.Executor
+	mutex    *sync.Mutex
 }
 
 // New constructs a ExecutorHandler from a executor.
 func New(executor *executor.Executor) *ExecutorHandler {
-	return &ExecutorHandler{executor: executor}
+	return &ExecutorHandler{executor: executor, mutex: &sync.Mutex{}}
 }
 
 func writeErr(w io.Writer, err error) {
@@ -78,8 +80,8 @@ func (h *ExecutorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	decoder := json.NewDecoder(r.Body)
-  var qreq Request   
-  err := decoder.Decode(&qreq)
+ 	var qreq Request   
+  	err := decoder.Decode(&qreq)
 	if err != nil {
 		log.Println("error parsing:", err)
 		writeErr(w, err)
@@ -87,15 +89,20 @@ func (h *ExecutorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	q := qreq.Query
 	
+	h.mutex.Lock()
 	/*
 	//TODO(tallstreet): reject non-GET/OPTIONS requests
 	*/
 	var doc graphql.Document
 	if err := parser.New("graphql", strings.NewReader(q)).Decode(&doc); err != nil {
 		
-		log.Printf(err.Error())
-		
+		h.mutex.Unlock()
+		log.Println("error parsing graphql:", err.Error())
+		writeErr(w, err)
+		return
+
 	}
+	h.mutex.Unlock()
 	
 	parser.InlineFragments(&doc)
 	
