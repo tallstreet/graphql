@@ -23,8 +23,8 @@ type Error struct {
 
 // Result represents a relay query.
 type Request struct {
-	Query      string      `json:"query,omitempty"`
-	Variables  interface{} `json:"variables,omitempty"`
+	Query      string                       `json:"query,omitempty"`
+	Variables  map[string]interface{} `json:"variables,omitempty"`
 }
 
 // Result represents a graphql query result.
@@ -120,6 +120,7 @@ func (h *ExecutorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		ctx = context.WithValue(ctx, "http_request", r)
+		ctx = context.WithValue(ctx, "variables", qreq.Variables)
 		if r.Header.Get("X-GraphQL-Only-Parse") == "1" {
 			writeJSONIndent(w, operation, " ")
 			return

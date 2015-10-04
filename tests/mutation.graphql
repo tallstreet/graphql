@@ -1,0 +1,26 @@
+mutation AddTodoMutation($input:AddTodoInput!){
+  addTodo(input:$input){
+    clientMutationId,
+    ...__RelayQueryFragmentkwzj38w
+   }
+ } 
+   
+fragment __RelayQueryFragmentkwzj38w on AddTodoPayload {
+  todoEdge {
+    cursor,
+    node {
+      complete,
+      id,
+      text
+    }
+  },
+  viewer{
+    _todosf6ao4v:todos(first:9007199254740991){
+      totalCount
+    },
+    id,
+    todos{
+      totalCount
+    }
+  }
+}
