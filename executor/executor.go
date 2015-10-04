@@ -54,6 +54,7 @@ type fieldResult struct {
 	FieldName string
 	Value     interface{}
 	Err       error
+	Index     int
 }
 
 func (e *Executor) findFields(selectionSet graphql.SelectionSet) []*graphql.Field {
@@ -173,7 +174,7 @@ func (e *Executor) Resolve(ctx context.Context, partial interface{}, field *grap
 
 func (e *Executor) resolveSlice(ctx context.Context, partials interface{}, field *graphql.Field) (interface{}, error) {
 	v := reflect.ValueOf(partials)
-	results := make([]interface{}, 0, v.Len())
+	results := make([]interface{}, v.Len(), v.Len())
 	resChan := make(chan fieldResult)
 	wg := sync.WaitGroup{}
 	for i := 0; i < v.Len(); i++ {
@@ -181,7 +182,7 @@ func (e *Executor) resolveSlice(ctx context.Context, partials interface{}, field
 		go func(i int) {
 			defer wg.Done()
 			result, err := e.Resolve(ctx, v.Index(i).Interface(), field)
-			resChan <- fieldResult{Value: result, Err: err}
+			resChan <- fieldResult{Value: result, Err: err, Index: i}
 		}(i)
 	}
 	go func() {
@@ -192,7 +193,7 @@ func (e *Executor) resolveSlice(ctx context.Context, partials interface{}, field
 		if result.Err != nil {
 			return nil, result.Err
 		}
-		results = append(results, result.Value)
+		results[result.Index] = result.Value
 	}
 	return results, nil
 }
