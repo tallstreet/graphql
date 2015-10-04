@@ -25,7 +25,7 @@ func inlineFragmentsInSelection(doc *graphql.Document, j *graphql.SelectionSet) 
 		if s.FragmentSpread != nil {
 			frag := doc.LookupFragmentByName(s.FragmentSpread.Name)
 			if frag != nil {
-				s.InlineFragment = &graphql.InlineFragment {
+				s.InlineFragment = &graphql.InlineFragment{
 					frag.TypeCondition,
 					frag.Directives,
 					frag.SelectionSet,
@@ -40,12 +40,11 @@ func inlineFragmentsInSelection(doc *graphql.Document, j *graphql.SelectionSet) 
 	return nil
 }
 
-
 // Goes through a graphql AST and replace fragment spreads with the fragment definitions
 func InlineFragments(i interface{}) (err error) {
 	doc := (i.(*graphql.Document))
 	for o := range doc.Operations {
-      inlineFragmentsInSelection(doc, &doc.Operations[o].SelectionSet)
-  }
+		inlineFragmentsInSelection(doc, &doc.Operations[o].SelectionSet)
+	}
 	return nil
 }

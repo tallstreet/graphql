@@ -9,14 +9,14 @@ import (
 	"os"
 	"testing"
 
-	"sevki.org/lib/prettyprint"
 	"github.com/tallstreet/graphql"
+	"sevki.org/lib/prettyprint"
 )
 
 func TestKitchenSink(t *testing.T) {
 	t.Parallel()
 	var doc graphql.Document
-	
+
 	ks, _ := os.Open("../tests/relay-todo.graphql")
 	if err := New("kitchenSink", ks).Decode(&doc); err != nil {
 		t.Error(err.Error())
@@ -31,5 +31,5 @@ func TestKitchenSink(t *testing.T) {
 		//		log.Printf(string(e))
 		log.Printf(prettyprint.AsJSON(doc))
 	}
-	
+
 }

@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"io"
 	"log"
-	"sync"
-	"strings"
 	"net/http"
+	"strings"
+	"sync"
 
-	
 	"github.com/tallstreet/graphql"
 	"github.com/tallstreet/graphql/executor"
 	"github.com/tallstreet/graphql/executor/tracer"
@@ -23,8 +22,8 @@ type Error struct {
 
 // Result represents a relay query.
 type Request struct {
-	Query      string                       `json:"query,omitempty"`
-	Variables  map[string]interface{} `json:"variables,omitempty"`
+	Query     string                 `json:"query,omitempty"`
+	Variables map[string]interface{} `json:"variables,omitempty"`
 }
 
 // Result represents a graphql query result.
@@ -78,24 +77,24 @@ func (h *ExecutorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		return
 	}
-	
+
 	decoder := json.NewDecoder(r.Body)
- 	var qreq Request   
-  	err := decoder.Decode(&qreq)
+	var qreq Request
+	err := decoder.Decode(&qreq)
 	if err != nil {
 		log.Println("error parsing:", err)
 		writeErr(w, err)
 		return
 	}
 	q := qreq.Query
-	
+
 	h.mutex.Lock()
 	/*
-	//TODO(tallstreet): reject non-GET/OPTIONS requests
+		//TODO(tallstreet): reject non-GET/OPTIONS requests
 	*/
 	var doc graphql.Document
 	if err := parser.New("graphql", strings.NewReader(q)).Decode(&doc); err != nil {
-		
+
 		h.mutex.Unlock()
 		log.Println("error parsing graphql:", err.Error())
 		writeErr(w, err)
@@ -103,9 +102,9 @@ func (h *ExecutorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	}
 	h.mutex.Unlock()
-	
+
 	parser.InlineFragments(&doc)
-	
+
 	var result = Result{}
 	for o := range doc.Operations {
 		operation := doc.Operations[o]
@@ -138,6 +137,6 @@ func (h *ExecutorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			result.Trace = t
 		}
 	}
-	
+
 	writeJSONIndent(w, result, "  ")
 }

@@ -6,7 +6,7 @@ package parser // import "github.com/tallstreet/graphql/parser"
 
 /*
 #cgo CFLAGS: -I ../libgraphqlparser/c/
-#cgo LDFLAGS: -L ../libgraphqlparser -lgraphqlparser
+#cgo LDFLAGS: -L /Users/gary.roberts/Development/go/src/github.com/tallstreet/libgraphqlparser -lgraphqlparser
 #include "GraphQLAst.h"
 #include "GraphQLAstNode.h"
 #include "GraphQLAstVisitor.h"
@@ -63,15 +63,15 @@ void process_end_visit_name_cgo(struct GraphQLAstName *node, void *parser);
 import "C"
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"unsafe"
-	"errors"
 	"strconv"
-	
-	"github.com/tallstreet/graphql"
+	"unsafe"
+
 	"github.com/oleiade/lane"
+	"github.com/tallstreet/graphql"
 )
 
 type Parser struct {
@@ -103,7 +103,7 @@ func processEndVisitDocument(node *C.struct_GraphQLAstDocument, parser unsafe.Po
 func processVisitOperationDefinition(node *C.struct_GraphQLAstOperationDefinition, parser unsafe.Pointer) int {
 	p := (*Parser)(parser)
 	doc := p.nodes.Head().(*graphql.Document)
-	operation := &graphql.Operation {}
+	operation := &graphql.Operation{}
 	doc.Operations = append(doc.Operations, operation)
 	p.visitNode(operation)
 	return 1
@@ -121,12 +121,10 @@ func processEndVisitOperationDefinition(node *C.struct_GraphQLAstOperationDefini
 	p.endVisitNode()
 }
 
-
 //export processVisitVariableDefinition
 func processVisitVariableDefinition(node *C.struct_GraphQLAstVariableDefinition, parser unsafe.Pointer) int {
 	p := (*Parser)(parser)
-	variable := &graphql.VariableDefinition {
-	}
+	variable := &graphql.VariableDefinition{}
 	operation := p.nodes.Head().(*graphql.Operation)
 	operation.VariableDefinitions = append(operation.VariableDefinitions, variable)
 	p.visitNode(variable)
@@ -150,13 +148,12 @@ func processEndVisitVariableDefinition(node *C.struct_GraphQLAstVariableDefiniti
 		p.visitNode(last3)
 		variable, ok = last2.(*graphql.VariableDefinition)
 		variable.Variable = last1.(*graphql.Variable)
-	}	
+	}
 	typeT := (*C.struct_GraphQLAstNamedType)(C.GraphQLAstVariableDefinition_get_type(node))
 	typeName := C.GraphQLAstNamedType_get_name(typeT)
 	variable.Type.Name = C.GoString(C.GraphQLAstName_get_value(typeName))
-	
-}
 
+}
 
 //export processVisitSelectionSet
 func processVisitSelectionSet(node *C.struct_GraphQLAstSelectionSet, parser unsafe.Pointer) int {
@@ -175,18 +172,18 @@ func processVisitField(node *C.struct_GraphQLAstField, parser unsafe.Pointer) in
 	}
 	operation, ok := p.nodes.Head().(*graphql.Operation)
 	if ok {
-	  operation.SelectionSet = append(operation.SelectionSet, selection)
+		operation.SelectionSet = append(operation.SelectionSet, selection)
 	}
 	parentField, ok := p.nodes.Head().(*graphql.Selection)
 	if ok && parentField.Field != nil {
-	  parentField.Field.SelectionSet = append(parentField.Field.SelectionSet, selection)
+		parentField.Field.SelectionSet = append(parentField.Field.SelectionSet, selection)
 	}
 	if ok && parentField.InlineFragment != nil {
 		parentField.InlineFragment.SelectionSet = append(parentField.InlineFragment.SelectionSet, selection)
 	}
 	fragDefinition, ok := p.nodes.Head().(*graphql.FragmentDefinition)
 	if ok {
-	  fragDefinition.SelectionSet = append(fragDefinition.SelectionSet, selection)
+		fragDefinition.SelectionSet = append(fragDefinition.SelectionSet, selection)
 	}
 	p.visitNode(selection)
 	return 1
@@ -221,8 +218,8 @@ func processEndVisitArgument(node *C.struct_GraphQLAstArgument, parser unsafe.Po
 	p := (*Parser)(parser)
 	name := C.GraphQLAstArgument_get_name(node)
 	value := p.endVisitNode()
-	argument := graphql.Argument {
-		Name: C.GoString(C.GraphQLAstName_get_value(name)), 
+	argument := graphql.Argument{
+		Name:  C.GoString(C.GraphQLAstName_get_value(name)),
 		Value: value,
 	}
 	selection, ok := p.nodes.Head().(*graphql.Selection)
@@ -246,15 +243,15 @@ func processVisitFragmentSpread(node *C.struct_GraphQLAstFragmentSpread, parser 
 	}
 	operation, ok := p.nodes.Head().(*graphql.Operation)
 	if ok {
-	  operation.SelectionSet = append(operation.SelectionSet, selection)
+		operation.SelectionSet = append(operation.SelectionSet, selection)
 	}
 	parent, ok := p.nodes.Head().(*graphql.Selection)
 	if ok {
-	  parent.Field.SelectionSet = append(parent.Field.SelectionSet, selection)
+		parent.Field.SelectionSet = append(parent.Field.SelectionSet, selection)
 	}
 	fragDefinition, ok := p.nodes.Head().(*graphql.FragmentDefinition)
 	if ok {
-	  fragDefinition.SelectionSet = append(fragDefinition.SelectionSet, selection)
+		fragDefinition.SelectionSet = append(fragDefinition.SelectionSet, selection)
 	}
 	return 0
 }
@@ -271,7 +268,7 @@ func processVisitInlineFragment(node *C.struct_GraphQLAstInlineFragment, parser 
 	}
 	operation, ok := p.endVisitNode().(*graphql.Operation)
 	if ok {
-	  operation.SelectionSet = append(operation.SelectionSet, selection)
+		operation.SelectionSet = append(operation.SelectionSet, selection)
 	}
 	p.visitNode(selection)
 	return 1
@@ -280,7 +277,7 @@ func processVisitInlineFragment(node *C.struct_GraphQLAstInlineFragment, parser 
 //export processEndVisitInlineFragment
 func processEndVisitInlineFragment(node *C.struct_GraphQLAstInlineFragment, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
-	
+
 	fragment := p.nodes.Head().(*graphql.Selection).InlineFragment
 	condition := C.GraphQLAstInlineFragment_get_type_condition(node)
 	condition_name := C.GraphQLAstNamedType_get_name(condition)
@@ -293,7 +290,7 @@ func processVisitFragmentDefinition(node *C.struct_GraphQLAstFragmentDefinition,
 	p := (*Parser)(parser)
 	doc := p.nodes.Head().(*graphql.Document)
 	name := C.GraphQLAstFragmentDefinition_get_name(node)
-	fragment := &graphql.FragmentDefinition {
+	fragment := &graphql.FragmentDefinition{
 		Name: C.GoString(C.GraphQLAstName_get_value(name)),
 	}
 	doc.FragmentDefinitions = append(doc.FragmentDefinitions, fragment)
@@ -319,7 +316,7 @@ func processVisitVariable(node *C.struct_GraphQLAstVariable, parser unsafe.Point
 //export processEndVisitVariable
 func processEndVisitVariable(node *C.struct_GraphQLAstVariable, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
-	variable := &graphql.Variable {}
+	variable := &graphql.Variable{}
 	name := C.GraphQLAstVariable_get_name(node)
 	if name != nil {
 		variable.Name = C.GoString(C.GraphQLAstName_get_value(name))
@@ -337,7 +334,7 @@ func processEndVisitIntValue(node *C.struct_GraphQLAstIntValue, parser unsafe.Po
 	p := (*Parser)(parser)
 	value := C.GoString(C.GraphQLAstIntValue_get_value(node))
 	i, _ := strconv.ParseInt(value, 10, 64)
-	v := &graphql.Value{ Value: i }
+	v := &graphql.Value{Value: i}
 	p.visitNode(v)
 }
 
@@ -351,7 +348,7 @@ func processEndVisitFloatValue(node *C.struct_GraphQLAstFloatValue, parser unsaf
 	p := (*Parser)(parser)
 	value := C.GoString(C.GraphQLAstFloatValue_get_value(node))
 	f, _ := strconv.ParseFloat(value, 64)
-	v := &graphql.Value{ Value: f }
+	v := &graphql.Value{Value: f}
 	p.visitNode(v)
 }
 
@@ -364,7 +361,7 @@ func processVisitStringValue(node *C.struct_GraphQLAstStringValue, parser unsafe
 func processEndVisitStringValue(node *C.struct_GraphQLAstStringValue, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
 	value := C.GraphQLAstStringValue_get_value(node)
-	v := &graphql.Value{ Value: C.GoString(value)}
+	v := &graphql.Value{Value: C.GoString(value)}
 	p.visitNode(v)
 }
 
@@ -377,7 +374,7 @@ func processVisitBooleanValue(node *C.struct_GraphQLAstBooleanValue, parser unsa
 func processEndVisitBooleanValue(node *C.struct_GraphQLAstBooleanValue, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
 	value := C.GraphQLAstBooleanValue_get_value(node)
-	v := &graphql.Value{ Value: value == 1 }
+	v := &graphql.Value{Value: value == 1}
 	p.visitNode(v)
 }
 
@@ -390,10 +387,9 @@ func processVisitEnumValue(node *C.struct_GraphQLAstEnumValue, parser unsafe.Poi
 func processEndVisitEnumValue(node *C.struct_GraphQLAstEnumValue, parser unsafe.Pointer) {
 	p := (*Parser)(parser)
 	value := C.GraphQLAstEnumValue_get_value(node)
-	v := &graphql.Value{ Value: C.GoString(value)}
+	v := &graphql.Value{Value: C.GoString(value)}
 	p.visitNode(v)
 }
-
 
 //export processVisitArrayValue
 func processVisitArrayValue(node *C.struct_GraphQLAstArrayValue, parser unsafe.Pointer) int {
@@ -408,7 +404,7 @@ func processEndVisitArrayValue(node *C.struct_GraphQLAstArrayValue, parser unsaf
 	for i := size - 1; i > 0; i-- {
 		array[i] = p.endVisitNode()
 	}
-	v := &graphql.Value{ Value: array }
+	v := &graphql.Value{Value: array}
 	p.visitNode(v)
 }
 
@@ -425,10 +421,10 @@ func processEndVisitObjectValue(node *C.struct_GraphQLAstObjectValue, parser uns
 	for i := 0; i < size; i++ {
 		val := p.endVisitNode().(map[string]interface{})
 		for k, v := range val {
-		    object[k] = v
+			object[k] = v
 		}
 	}
-	v := &graphql.Value{ Value: object }
+	v := &graphql.Value{Value: object}
 	p.visitNode(v)
 }
 
@@ -547,52 +543,52 @@ func (p *Parser) run() {
 		return
 	}
 	visitor_callbacks := C.struct_GraphQLAstVisitorCallbacks{
-		visit_document: (C.visit_document_func)(C.process_visit_document_cgo),
-		end_visit_document: (C.end_visit_document_func)(C.process_end_visit_document_cgo),
-		visit_operation_definition: (C.visit_operation_definition_func)(C.process_visit_operation_definition_cgo),
+		visit_document:                 (C.visit_document_func)(C.process_visit_document_cgo),
+		end_visit_document:             (C.end_visit_document_func)(C.process_end_visit_document_cgo),
+		visit_operation_definition:     (C.visit_operation_definition_func)(C.process_visit_operation_definition_cgo),
 		end_visit_operation_definition: (C.end_visit_operation_definition_func)(C.process_end_visit_operation_definition_cgo),
-		visit_variable_definition: (C.visit_variable_definition_func)(C.process_visit_variable_definition_cgo),
-		end_visit_variable_definition: (C.end_visit_variable_definition_func)(C.process_end_visit_variable_definition_cgo),
-		visit_selection_set: (C.visit_selection_set_func)(C.process_visit_selection_set_cgo),
-		end_visit_selection_set: (C.end_visit_selection_set_func)(C.process_end_visit_selection_set_cgo),
-		visit_field: (C.visit_field_func)(C.process_visit_field_cgo),
-		end_visit_field: (C.end_visit_field_func)(C.process_end_visit_field_cgo),
-		visit_argument: (C.visit_argument_func)(C.process_visit_argument_cgo),
-		end_visit_argument: (C.end_visit_argument_func)(C.process_end_visit_argument_cgo),
-		visit_fragment_spread: (C.visit_fragment_spread_func)(C.process_visit_fragment_spread_cgo),
-		end_visit_fragment_spread: (C.end_visit_fragment_spread_func)(C.process_end_visit_fragment_spread_cgo),
-		visit_inline_fragment: (C.visit_inline_fragment_func)(C.process_visit_inline_fragment_cgo),
-		end_visit_inline_fragment: (C.end_visit_inline_fragment_func)(C.process_end_visit_inline_fragment_cgo),
-		visit_fragment_definition: (C.visit_fragment_definition_func)(C.process_visit_fragment_definition_cgo),
-		end_visit_fragment_definition: (C.end_visit_fragment_definition_func)(C.process_end_visit_fragment_definition_cgo),
-		visit_variable: (C.visit_variable_func)(C.process_visit_variable_cgo),
-		end_visit_variable: (C.end_visit_variable_func)(C.process_end_visit_variable_cgo),
-		visit_int_value: (C.visit_int_value_func)(C.process_visit_int_value_cgo),
-		end_visit_int_value: (C.end_visit_int_value_func)(C.process_end_visit_int_value_cgo),
-		visit_float_value: (C.visit_float_value_func)(C.process_visit_float_value_cgo),
-		end_visit_float_value: (C.end_visit_float_value_func)(C.process_end_visit_float_value_cgo),
-		visit_string_value: (C.visit_string_value_func)(C.process_visit_string_value_cgo),
-		end_visit_string_value: (C.end_visit_string_value_func)(C.process_end_visit_string_value_cgo),
-		visit_boolean_value: (C.visit_boolean_value_func)(C.process_visit_boolean_value_cgo),
-		end_visit_boolean_value: (C.end_visit_boolean_value_func)(C.process_end_visit_boolean_value_cgo),
-		visit_enum_value: (C.visit_enum_value_func)(C.process_visit_enum_value_cgo),
-		end_visit_enum_value: (C.end_visit_enum_value_func)(C.process_end_visit_enum_value_cgo),
-		visit_array_value: (C.visit_array_value_func)(C.process_visit_array_value_cgo),
-		end_visit_array_value: (C.end_visit_array_value_func)(C.process_end_visit_array_value_cgo),
-		visit_object_value: (C.visit_object_value_func)(C.process_visit_object_value_cgo),
-		end_visit_object_value: (C.end_visit_object_value_func)(C.process_end_visit_object_value_cgo),
-		visit_object_field: (C.visit_object_field_func)(C.process_visit_object_field_cgo),
-		end_visit_object_field: (C.end_visit_object_field_func)(C.process_end_visit_object_field_cgo),
-		visit_directive: (C.visit_directive_func)(C.process_visit_directive_cgo),
-		end_visit_directive: (C.end_visit_directive_func)(C.process_end_visit_directive_cgo),
-		visit_named_type: (C.visit_named_type_func)(C.process_visit_named_type_cgo),
-		end_visit_named_type: (C.end_visit_named_type_func)(C.process_end_visit_named_type_cgo),
-		visit_list_type: (C.visit_list_type_func)(C.process_visit_list_type_cgo),
-		end_visit_list_type: (C.end_visit_list_type_func)(C.process_end_visit_list_type_cgo),
-		visit_non_null_type: (C.visit_non_null_type_func)(C.process_visit_non_null_type_cgo),
-		end_visit_non_null_type: (C.end_visit_non_null_type_func)(C.process_end_visit_non_null_type_cgo),
-		visit_name: (C.visit_name_func)(C.process_visit_name_cgo),
-		end_visit_name: (C.end_visit_name_func)(C.process_end_visit_name_cgo),
+		visit_variable_definition:      (C.visit_variable_definition_func)(C.process_visit_variable_definition_cgo),
+		end_visit_variable_definition:  (C.end_visit_variable_definition_func)(C.process_end_visit_variable_definition_cgo),
+		visit_selection_set:            (C.visit_selection_set_func)(C.process_visit_selection_set_cgo),
+		end_visit_selection_set:        (C.end_visit_selection_set_func)(C.process_end_visit_selection_set_cgo),
+		visit_field:                    (C.visit_field_func)(C.process_visit_field_cgo),
+		end_visit_field:                (C.end_visit_field_func)(C.process_end_visit_field_cgo),
+		visit_argument:                 (C.visit_argument_func)(C.process_visit_argument_cgo),
+		end_visit_argument:             (C.end_visit_argument_func)(C.process_end_visit_argument_cgo),
+		visit_fragment_spread:          (C.visit_fragment_spread_func)(C.process_visit_fragment_spread_cgo),
+		end_visit_fragment_spread:      (C.end_visit_fragment_spread_func)(C.process_end_visit_fragment_spread_cgo),
+		visit_inline_fragment:          (C.visit_inline_fragment_func)(C.process_visit_inline_fragment_cgo),
+		end_visit_inline_fragment:      (C.end_visit_inline_fragment_func)(C.process_end_visit_inline_fragment_cgo),
+		visit_fragment_definition:      (C.visit_fragment_definition_func)(C.process_visit_fragment_definition_cgo),
+		end_visit_fragment_definition:  (C.end_visit_fragment_definition_func)(C.process_end_visit_fragment_definition_cgo),
+		visit_variable:                 (C.visit_variable_func)(C.process_visit_variable_cgo),
+		end_visit_variable:             (C.end_visit_variable_func)(C.process_end_visit_variable_cgo),
+		visit_int_value:                (C.visit_int_value_func)(C.process_visit_int_value_cgo),
+		end_visit_int_value:            (C.end_visit_int_value_func)(C.process_end_visit_int_value_cgo),
+		visit_float_value:              (C.visit_float_value_func)(C.process_visit_float_value_cgo),
+		end_visit_float_value:          (C.end_visit_float_value_func)(C.process_end_visit_float_value_cgo),
+		visit_string_value:             (C.visit_string_value_func)(C.process_visit_string_value_cgo),
+		end_visit_string_value:         (C.end_visit_string_value_func)(C.process_end_visit_string_value_cgo),
+		visit_boolean_value:            (C.visit_boolean_value_func)(C.process_visit_boolean_value_cgo),
+		end_visit_boolean_value:        (C.end_visit_boolean_value_func)(C.process_end_visit_boolean_value_cgo),
+		visit_enum_value:               (C.visit_enum_value_func)(C.process_visit_enum_value_cgo),
+		end_visit_enum_value:           (C.end_visit_enum_value_func)(C.process_end_visit_enum_value_cgo),
+		visit_array_value:              (C.visit_array_value_func)(C.process_visit_array_value_cgo),
+		end_visit_array_value:          (C.end_visit_array_value_func)(C.process_end_visit_array_value_cgo),
+		visit_object_value:             (C.visit_object_value_func)(C.process_visit_object_value_cgo),
+		end_visit_object_value:         (C.end_visit_object_value_func)(C.process_end_visit_object_value_cgo),
+		visit_object_field:             (C.visit_object_field_func)(C.process_visit_object_field_cgo),
+		end_visit_object_field:         (C.end_visit_object_field_func)(C.process_end_visit_object_field_cgo),
+		visit_directive:                (C.visit_directive_func)(C.process_visit_directive_cgo),
+		end_visit_directive:            (C.end_visit_directive_func)(C.process_end_visit_directive_cgo),
+		visit_named_type:               (C.visit_named_type_func)(C.process_visit_named_type_cgo),
+		end_visit_named_type:           (C.end_visit_named_type_func)(C.process_end_visit_named_type_cgo),
+		visit_list_type:                (C.visit_list_type_func)(C.process_visit_list_type_cgo),
+		end_visit_list_type:            (C.end_visit_list_type_func)(C.process_end_visit_list_type_cgo),
+		visit_non_null_type:            (C.visit_non_null_type_func)(C.process_visit_non_null_type_cgo),
+		end_visit_non_null_type:        (C.end_visit_non_null_type_func)(C.process_end_visit_non_null_type_cgo),
+		visit_name:                     (C.visit_name_func)(C.process_visit_name_cgo),
+		end_visit_name:                 (C.end_visit_name_func)(C.process_end_visit_name_cgo),
 	}
 	C.graphql_node_visit(ast, &visitor_callbacks, unsafe.Pointer(p))
 

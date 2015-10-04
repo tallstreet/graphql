@@ -18,9 +18,9 @@ type Document struct {
 	Operations          []*Operation
 	DefinitionSize      int
 	FragmentDefinitions []*FragmentDefinition `json:",omitempty"`
-	EnumDefinitions     []EnumDefinition     `json:",omitempty"`
-	TypeDefinitions     []TypeDefinition     `json:",omitempty"`
-	TypeExtensions      []TypeExtension      `json:",omitempty"`
+	EnumDefinitions     []EnumDefinition      `json:",omitempty"`
+	TypeDefinitions     []TypeDefinition      `json:",omitempty"`
+	TypeExtensions      []TypeExtension       `json:",omitempty"`
 }
 
 func (doc *Document) LookupFragmentByName(name string) *FragmentDefinition {
@@ -34,11 +34,11 @@ func (doc *Document) LookupFragmentByName(name string) *FragmentDefinition {
 
 // Operation is either a read or mutation in GraphQL.
 type Operation struct {
-	Type                OperationType        `json:",omitempty"`
-	Name                string               `json:",omitempty"`
-	SelectionSet        SelectionSet         `json:",omitempty"`
+	Type                OperationType         `json:",omitempty"`
+	Name                string                `json:",omitempty"`
+	SelectionSet        SelectionSet          `json:",omitempty"`
 	VariableDefinitions []*VariableDefinition `json:",omitempty"`
-	Directives          []Directive          `json:",omitempty"`
+	Directives          []Directive           `json:",omitempty"`
 }
 
 func (o *Operation) String() string {
@@ -150,8 +150,8 @@ type Type struct {
 }
 
 // Value refers to a value
-type Value struct{ 
-	Value    interface{}
+type Value struct {
+	Value interface{}
 }
 
 // Interface descibes a set of methods a type must conform to to satisfy it.
@@ -191,8 +191,8 @@ type Variable struct {
 
 // Directive describes a directive which can alter behavior in different parts of a GraphQL Operation.
 type Directive struct {
-	Name  string
-	Arguments    Arguments    `json:",omitempty"`
-	Type  *Type  `json:",omitempty"`
-	Value *Value `json:",omitempty"`
+	Name      string
+	Arguments Arguments `json:",omitempty"`
+	Type      *Type     `json:",omitempty"`
+	Value     *Value    `json:",omitempty"`
 }
