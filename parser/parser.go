@@ -6,7 +6,7 @@ package parser // import "github.com/tallstreet/graphql/parser"
 
 /*
 #cgo CFLAGS: -I ../libgraphqlparser/c/
-#cgo LDFLAGS: -L /Users/gary.roberts/Development/go/src/github.com/tallstreet/libgraphqlparser -lgraphqlparser
+#cgo LDFLAGS: -L ../libgraphqlparser -lgraphqlparser
 #include "GraphQLAst.h"
 #include "GraphQLAstNode.h"
 #include "GraphQLAstVisitor.h"
